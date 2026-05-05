@@ -18,18 +18,31 @@ class EventService {
             throw URLError(.badURL)
         }
         
-        // Fazer a requisição na internet
-        let (data, response) = try await URLSession.shared.data(from: url)
+        let data: Data
+        let response: URLResponse
+        
+        // Fazer a requisição
+        do {
+            (data, response) = try await URLSession.shared.data(from: url)
+            print("DEBUG: Dados recebidos, tamanho: \(data.count) bytes")
+        } catch {
+            print("DEBUG: Erro de rede detalhado: \(error)")
+            throw error
+        }
         
         // Verificação do servidor
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
+            print("DEBUG: Resposta do servidor inválida")
             throw URLError(.badServerResponse)
         }
         
-        // Decodificar o JSON usando o Model
-        let decodedResponse = try JSONDecoder().decode(EventResponse.self, from: data)
-        
-       
-        return decodedResponse.items
+        // Decodificar o JSON
+        do {
+            let decodedResponse = try JSONDecoder().decode(EventResponse.self, from: data)
+            return decodedResponse.items
+        } catch {
+            print("DEBUG: Erro ao decodificar JSON: \(error)")
+            throw error
+        }
     }
 }
