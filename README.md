@@ -30,4 +30,16 @@
   
   * Segurança: 
      Foco em garantir que datas inconsistentes não quebrem a experiência do usuário.
+
+4 - Arquitetura e Organização
  
+  Para manter o projeto escalável e as Views leves, utilizei a técnica de **Componentização**:
+  
+  * Pasta Components: 
+     Centraliza elementos visuais reutilizáveis (como `EventPosterImage`, `GenreBadge`, `PrimaryButton`, entre outros)
+  
+  * Responsabilidade única:
+     Cada componente foca em uma única tarefa visual, facilitando a manutenção e garantindo a consistência estética em todo o app.
+    
+  * DRY: 
+     Evita a duplicação de lógica visual complexa, como o tratamento de estados de carregamento e erro de imagens assíncronas.
