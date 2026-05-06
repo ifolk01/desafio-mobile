@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		9B5FA5C12FAB654400D255F4 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 9B5FA5C02FAB654400D255F4 /* README.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		9B5FA5832FAA5D9C00D255F4 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +31,7 @@
 		9B5FA5752FAA5D9B00D255F4 /* desafio-mobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "desafio-mobile.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B5FA5822FAA5D9C00D255F4 /* desafio-mobileTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "desafio-mobileTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9B5FA58C2FAA5D9C00D255F4 /* desafio-mobileUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "desafio-mobileUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9B5FA5C02FAB654400D255F4 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = "/Users/filipepintocunha/Code/desafio-mobile/README.md"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -88,6 +93,7 @@
 		9B5FA56C2FAA5D9B00D255F4 = {
 			isa = PBXGroup;
 			children = (
+				9B5FA5C02FAB654400D255F4 /* README.md */,
 				9B5FA5772FAA5D9B00D255F4 /* desafio-mobile */,
 				9B5FA5852FAA5D9C00D255F4 /* desafio-mobileTests */,
 				9B5FA58F2FAA5D9C00D255F4 /* desafio-mobileUITests */,
@@ -225,6 +231,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B5FA5C12FAB654400D255F4 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
