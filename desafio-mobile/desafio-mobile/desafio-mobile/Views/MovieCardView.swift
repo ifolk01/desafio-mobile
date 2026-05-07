@@ -16,7 +16,7 @@ struct MovieCardView: View {
         VStack(alignment: .leading, spacing: 8) {
             ZStack(alignment: .bottomLeading) {
                 
-                EventPosterImage(urlString: event.posterURL, retryID: $retryID)
+                EventPosterImage(urlString: event.posterURL, retryID: $retryID, width: 110, height: 160)
                 
                 if let premiere = event.premiereDate, let dateText = premiere.dayAndMonth{
                     PremiereBadge(dateText: dateText)
@@ -26,9 +26,10 @@ struct MovieCardView: View {
             Text(event.title)
                 .font(.caption)
                 .bold()
-                .lineLimit(2)
+                .lineLimit(3, reservesSpace: true)
                 .multilineTextAlignment(.leading)
-                .frame(width: 110, alignment: .leading)
+                .minimumScaleFactor(0.8) 
+                .frame(width: 110, alignment: .topLeading)
         }
     }
 }

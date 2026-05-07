@@ -37,7 +37,10 @@ struct ContentView: View {
                     ScrollView {
                         LazyVGrid(columns: columns, spacing: 20) {
                             ForEach(viewModel.events) { event in
-                                MovieCardView(event: event)
+                                NavigationLink(destination: EventDetailView(event: event)) {
+                                    MovieCardView(event: event)
+                                }
+                                .buttonStyle(PlainButtonStyle())
                             }
                         }
                         .padding()

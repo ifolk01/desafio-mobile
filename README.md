@@ -43,3 +43,17 @@
     
   * DRY: 
      Evita a duplicação de lógica visual complexa, como o tratamento de estados de carregamento e erro de imagens assíncronas.
+
+5 - Funcionalidades e Melhorias de UI
+
+  * Navegação Fluida:
+     Implementação de `NavigationLink` para transição entre lista e detalhes.
+  
+  * Layout Responsivo:
+     Uso de `GeometryReader` em substituição ao `UIScreen.main` (depreciado no iOS 26.0) para garantir adaptação a diferentes tamanhos de tela.
+
+  * Tratamento de Strings Longas:
+     Utilização de `lineLimit` com reserva de espaço e `minimumScaleFactor` para evitar quebra de layout em títulos extensos.
+
+  * Otimização de Imagens: 
+     Implementação de estados de carregamento (Shimmer/ProgressView) e tratamento de erros de rede com botão de re-tentativa (Retry) integrado ao componente `AsyncImage`.

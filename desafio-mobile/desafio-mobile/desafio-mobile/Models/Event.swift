@@ -11,30 +11,32 @@ struct EventResponse: Codable {
 }
 
 struct Event: Codable, Identifiable {
-    let id: String
-    let title: String
-    let synopsis: String?           
-    let contentRating: String?
-    let duration: String?
-    let genres: [String]?
-    let inPreSale: Bool
-    let imageFeatured: String?
-    let images: [EventImage]
-    let premiereDate: PremiereDate?
+        let id: String
+        let title: String
+        let synopsis: String?
+        let cast: String?
+        let contentRating: String?
+        let duration: String?
+        let genres: [String]?
+        let inPreSale: Bool
+        let imageFeatured: String?
+        let images: [EventImage]
+        let premiereDate: PremiereDate?
     
     // Mapeamento de nomes
     enum CodingKeys: String, CodingKey {
         case id, title, synopsis, contentRating, duration, genres
         case inPreSale, imageFeatured, images, premiereDate
+        case cast
     }
     
     // Lógica para o Poster
     var posterURL: String? {
-        // 1. Tenta pegar o Portrait
+        // Tenta pegar o Portrait
         if let portrait = images.first(where: { $0.type == "PosterPortrait" })?.url, !portrait.isEmpty {
             return portrait
         }
-        // 2. Tenta o Featured, mas só se não for uma string vazia, como tem em 3 titulos de filmes, sendo assim aciona o placeholder e não fica buscando um novo URL
+        // Tenta o Featured, mas só se não for uma string vazia, como tem em 3 titulos de filmes, sendo assim aciona o placeholder e não fica buscando um novo URL
         if let featured = imageFeatured, !featured.isEmpty {
             return featured
         }
