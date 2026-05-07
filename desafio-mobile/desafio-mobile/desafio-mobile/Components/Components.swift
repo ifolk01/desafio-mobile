@@ -66,7 +66,7 @@ struct EventPosterImage: View {
                 PlaceholderCard(width: width, height: height)
             }
         }
-        .frame(width: width, height: height) // Corrigido: Agora dentro do escopo da View
+        .frame(width: width, height: height)
         .cornerRadius(8)
         .clipped()
     }
@@ -92,7 +92,7 @@ struct PremiereBadge: View {
         Text(dateText)
             .font(.caption2)
             .bold()
-            .padding(.horizontal, 8) // Um pouco mais largo nas laterais
+            .padding(.horizontal, 8)
             .padding(.vertical, 4)
             .glassEffect(.regular.interactive(), in: .capsule )
            
@@ -147,7 +147,7 @@ struct PrimaryButton: View {
             .foregroundColor(.white)
             
             .cornerRadius(12)
-//            .shadow(color: .blue.opacity(0.3), radius: 5, x: 0, y: 3)
+
         }
     }
 }
@@ -258,7 +258,7 @@ struct MovieMonthCarousel: View {
                         MovieCardView(event: event, viewModel: viewModel)
                     }
                     .buttonStyle(PlainButtonStyle())
-                    // EFEITOS VISUAIS IGUAL AO SEU CÓDIGO DE INSPIRAÇÃO
+               
                     .scaleEffect(currentIndex == index ? 1.0 : 0.8)
                     .blur(radius: currentIndex == index ? 0 : 1)
                     .offset(x: CGFloat(index - currentIndex) * (cardWidth + spacing) + scrollOffset)
@@ -294,20 +294,19 @@ struct MovieFlatCarousel: View {
     @State private var currentIndex: Int = 0
     @State private var dragOffset: CGFloat = 0
     
-    // MARK: - Configurações Visuais UPGRADED
-    // Aumentei os tamanhos e o espaçamento para caber o destaque maior
-    let cardWidth: CGFloat = 110 // Base maior (+30)
-    let cardHeight: CGFloat = 230 // Base maior (+40)
-    let spacing: CGFloat = 80 // Espaçamento entre as bases (maior sobreposição)
+   
+    let cardWidth: CGFloat = 110
+    let cardHeight: CGFloat = 230
+    let spacing: CGFloat = 80
     
     // Fatores de Destaque
-    let focusScale: CGFloat = 1.25 // O do meio fica 20% MAIOR que o normal
-    let scaleSpread: CGFloat = 0.25 // Quanto os de trás diminuem (mais agressivo)
-    let focusBlur: CGFloat = 4.0 // Máximo de desfoque nos cards de trás
+    let focusScale: CGFloat = 1.25
+    let scaleSpread: CGFloat = 0.25
+    let focusBlur: CGFloat = 4.0
 
     var body: some View {
         GeometryReader { geo in
-            // Alinhado na esquerda para respeitar o design "prateleira"
+            
             ZStack(alignment: .leading) {
                 ForEach(Array(events.enumerated()), id: \.element.id) { index, event in
                     
@@ -316,7 +315,7 @@ struct MovieFlatCarousel: View {
                     let effectiveDiff = diff - dragFactor
                     let absEffectiveDiff = abs(effectiveDiff)
                     
-                    // ⬇️ MUDANÇA AQUI: Só renderiza o card se ele estiver perto do centro visível
+                   // Renderização pra suavizar a fluidez
                     if absEffectiveDiff <= 4.5 {
                         
                         let scale = max(focusScale - (absEffectiveDiff * scaleSpread), 0.75)
@@ -340,10 +339,10 @@ struct MovieFlatCarousel: View {
                     }
                 }
             }
-            // Alinhamento base para bater com o padding do mês
+            
             .offset(x: 16)
             
-            // Container do gesto (cobre a área do carrossel)
+            // Container do gesto
             .background(Color.clear.contentShape(Rectangle()))
             .gesture(
                 DragGesture()
@@ -353,9 +352,9 @@ struct MovieFlatCarousel: View {
                     .onEnded { gesture in
                         // Lógica de SNAP ajustada para ser mais responsiva
                         let velocity = gesture.predictedEndTranslation.width / spacing
-                        let threshold: CGFloat = velocity > 0.5 ? 0.3 : 0.7 // Facilita a troca se tiver velocidade
+                        let threshold: CGFloat = velocity > 0.5 ? 0.3 : 0.7
                         
-                        // ANIMAÇÃO DE FINALIZAÇÃO (SNAP)
+                      
                         // Spring com dampingfraction menor para um efeito elástico e fluido
                         withAnimation(.spring(response: 0.5, dampingFraction: 0.82)) {
                             if gesture.translation.width < -spacing * threshold && currentIndex < events.count - 1 {

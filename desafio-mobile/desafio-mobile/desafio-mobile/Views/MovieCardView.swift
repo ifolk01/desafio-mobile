@@ -45,9 +45,7 @@ struct MovieCardView: View {
                             .multilineTextAlignment(.leading)
                             .minimumScaleFactor(0.8)
                             .foregroundColor(.primary)
-                            // 1. Garante que o texto ocupe a largura toda do card
                             .frame(maxWidth: .infinity, alignment: .topLeading)
-                            // 2. O SEGREDO: Margens para o texto não colar nas bordas do fundo branco!
                             .padding(.horizontal, 10)
                             .padding(.bottom, 12)
         }

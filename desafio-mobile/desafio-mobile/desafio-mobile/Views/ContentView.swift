@@ -16,7 +16,7 @@ struct ContentView: View {
             switch currentTab {
             case "Últimas Estreias":
                 list = viewModel.events.filter { event in
-                    // Extrai o ano da data (seja do campo year ou do prefixo da localDate)
+                    // Extrai o ano da data
                     let year = event.premiereDate?.year ?? String(event.premiereDate?.localDate?.prefix(4) ?? "")
                     
                     // Regra: Somente filmes de 2026 que NÃO estão em pré-venda
@@ -28,7 +28,7 @@ struct ContentView: View {
                     let year = event.premiereDate?.year ?? String(event.premiereDate?.localDate?.prefix(4) ?? "")
                     
                     // Regra: Qualquer filme de 2027 pra frente OU qualquer filme em pré-venda
-                    return year >= "2027" 
+                    return year >= "2027" || event.inPreSale
                 }
                 
             case "Favoritos":
@@ -38,7 +38,7 @@ struct ContentView: View {
                 list = viewModel.events
             }
             
-            // Filtro da barra de busca continua igual
+            // Filtro da barra de busca
             if searchText.isEmpty {
                 return list
             } else {
@@ -46,7 +46,7 @@ struct ContentView: View {
             }
         }
     var groupedEvents: [(key: String, value: [Event])] {
-        // 1. Agrupamos os filmes filtrados (seja Estreias ou Favoritos)
+        //Filmes filtrados em Estreias ou Favoritos
         let dictionary = Dictionary(grouping: filteredEvents) { event -> String in
             if let localDate = event.premiereDate?.localDate, localDate.count >= 7 {
                 return String(localDate.prefix(7)) // Ex: "2026-05"
@@ -54,10 +54,10 @@ struct ContentView: View {
             return "9999-12"
         }
         
-        // 2. Ordenamos as chaves (os meses) para que Maio venha antes de Junho
+        //Ordenamos os meses na sua ordem cronologica
         let sortedKeys = dictionary.keys.sorted()
         
-        // 3. Mapeamos para o formato da View, garantindo a ordem interna dos filmes
+        // Mapeamos para o formato da View, garantindo a ordem interna dos filmes
         return sortedKeys.map { key in
             let displayTitle = key == "9999-12" ? "Em breve" : key.formatToMonthYear()
             
@@ -65,7 +65,7 @@ struct ContentView: View {
             let sortedMoviesForMonth = (dictionary[key] ?? []).sorted {
                 let date1 = $0.premiereDate?.localDate ?? ""
                 let date2 = $1.premiereDate?.localDate ?? ""
-                return date1 < date2 // Ordem Crescente: 01/05 vem antes de 15/05
+                return date1 < date2 // Ordem Crescente
             }
             
             return (key: displayTitle, value: sortedMoviesForMonth)
@@ -136,7 +136,7 @@ struct ContentView: View {
                                                 .fontWeight(.bold)
                                                 .padding(.horizontal)
                                             
-                                            // CARROSSEL PLANO ANCORADO NA ESQUERDA
+                                            // Carrossel na esquerda
                                             MovieFlatCarousel(events: group.value, viewModel: viewModel)
                                         }
                                     }
