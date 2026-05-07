@@ -13,7 +13,7 @@ struct MovieCardView: View {
     @State private var retryID = UUID()
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .center, spacing: 8) {
            
             ZStack(alignment: .topTrailing) {
                 // O Poster
@@ -22,6 +22,31 @@ struct MovieCardView: View {
                 // Botão de Favorito
                 FavoriteButton(event: event, viewModel: viewModel, size: .body, padding: 8.0)
                 .padding(3)
+                
+                if event.inPreSale {
+                                   
+                                    VStack {
+                                        HStack {
+                                            Text("Pre-sale")
+                                                .font(.system(size: 8, weight: .heavy))
+                                                .kerning(1.5)
+                                                .foregroundColor(.white)
+                                                .padding(.horizontal, 6)
+                                                .padding(.vertical, 4)
+                                        
+                                                .glassEffect(.regular, in: .rect(cornerRadius: 6))
+                                              
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: 6)
+                                                        .stroke(Color.white.opacity(0.3), lineWidth: 0.5)
+                                                )
+                                            
+                                            Spacer()
+                                        }
+                                        Spacer()
+                                    }
+                                    .padding(4) 
+                                }
                 
                 //Badge de Estreia
                 if let premiere = event.premiereDate, let dateText = premiere.dayAndMonth {

@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var searchText = ""
     @State private var currentTab = "Últimas Estreias"
     @Namespace var animation
+   
     var filteredEvents: [Event] {
             let list: [Event]
             
@@ -19,7 +20,7 @@ struct ContentView: View {
                     // Extrai o ano da data
                     let year = event.premiereDate?.year ?? String(event.premiereDate?.localDate?.prefix(4) ?? "")
                     
-                    // Regra: Somente filmes de 2026 que NÃO estão em pré-venda
+                    //Somente filmes de 2026 que NÃO estão em pré-venda
                     return year == "2026" && event.inPreSale == false
                 }
                 
@@ -27,7 +28,7 @@ struct ContentView: View {
                 list = viewModel.events.filter { event in
                     let year = event.premiereDate?.year ?? String(event.premiereDate?.localDate?.prefix(4) ?? "")
                     
-                    // Regra: Qualquer filme de 2027 pra frente OU qualquer filme em pré-venda
+                    // Qualquer filme de 2027 pra frente OU qualquer filme em pré-venda
                     return year >= "2027" || event.inPreSale
                 }
                 
@@ -46,6 +47,7 @@ struct ContentView: View {
             }
         }
     var groupedEvents: [(key: String, value: [Event])] {
+       
         //Filmes filtrados em Estreias ou Favoritos
         let dictionary = Dictionary(grouping: filteredEvents) { event -> String in
             if let localDate = event.premiereDate?.localDate, localDate.count >= 7 {
@@ -54,14 +56,14 @@ struct ContentView: View {
             return "9999-12"
         }
         
-        //Ordenamos os meses na sua ordem cronologica
+ 
         let sortedKeys = dictionary.keys.sorted()
         
-        // Mapeamos para o formato da View, garantindo a ordem interna dos filmes
+    
         return sortedKeys.map { key in
             let displayTitle = key == "9999-12" ? "Em breve" : key.formatToMonthYear()
             
-            // CORREÇÃO: Ordenamos os filmes deste mês específico por data de estreia
+            // Ordenamos os filmes deste mês específico por data de estreia
             let sortedMoviesForMonth = (dictionary[key] ?? []).sorted {
                 let date1 = $0.premiereDate?.localDate ?? ""
                 let date2 = $1.premiereDate?.localDate ?? ""
@@ -82,81 +84,85 @@ struct ContentView: View {
         TabView {
             
             NavigationStack {
-                VStack(spacing: 0) {
-                    
-                    SearchBar(text: $searchText, placeholder: "Buscar...")
-                    
-                    //Filtros
-                    HStack(spacing: 25) {
-                        FilterTabButton(title: "Últimas Estreias", current: $currentTab, animation: animation)
-                        FilterTabButton(title: "Em Breve", current: $currentTab, animation: animation)
-                        FilterTabButton(title: "Favoritos", current: $currentTab, animation: animation)
-                    }
-                    .padding(.top, 20)
-                    .padding(.horizontal)
-                    
-                    Divider().padding(.top, 10)
-                    
-                    // O Grid de Filmes
-                    if viewModel.isLoading {
-                        Spacer()
-                        ProgressView("Carregando filmes...")
-                        Spacer()
-                    } else if filteredEvents.isEmpty {
-                      
-                        EmptyStateView(
-                            icon: searchText.isEmpty ? "star" : "magnifyingglass",
-                            message: searchText.isEmpty ?
-                            "Você ainda não tem filmes favoritos." :
-                                "Não encontramos nenhum filme com o nome '\(searchText)'."
-                        )
-                    } else {
-                        ScrollView {
-                            LazyVStack(spacing: 10) { // Espaçamento vertical entre os meses
-                                
-                                if viewModel.isLoading {
-                                    ProgressView("Buscando filmes...")
-                                        .padding(.top, 50)
-                                } else if groupedEvents.isEmpty {
-                                    // Estado vazio para busca ou favoritos vazios
-                                    EmptyStateView(
-                                        icon: currentTab == "Favoritos" ? "star" : "film",
-                                        message: currentTab == "Favoritos" ?
-                                            "Você ainda não favoritou nenhum filme." :
-                                            "Nenhum filme encontrado para '\(searchText)'."
-                                    )
-                                } else {
-                                    // Esta estrutura unifica a exibição de Estreias, Em Breve e Favoritos
-                                    ForEach(groupedEvents, id: \.key) { group in
-                                        VStack(alignment: .leading, spacing: 40) {
+                        ZStack {
+                           
+                            LinearGradient(gradient: Gradient(colors: [.degradeDark, .black]),
+                                           startPoint: .top,
+                                           endPoint: .bottom)
+                                .ignoresSafeArea()
+                            
+                       
+                            ScrollView {
+                               
+                                LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
+                                    
+                                    // Busca
+                                    SearchBar(text: $searchText, placeholder: "Buscar...")
+                                        .padding(.top, 10)
+                                        .padding(.bottom, 20)
+                                    
+                                    // Seções
+                                    Section(header:
+                                        VStack(spacing: 0) {
+                                            HStack(spacing: 25) {
+                                                FilterTabButton(title: "Últimas Estreias", current: $currentTab, animation: animation)
+                                                FilterTabButton(title: "Em Breve", current: $currentTab, animation: animation)
+                                                FilterTabButton(title: "Favoritos", current: $currentTab, animation: animation)
+                                            }
+                                            .padding(.vertical, 10)
+                                            .padding(.horizontal)
+                                            .frame(maxWidth: .infinity)
+                                            .glassEffect(.regular.interactive(), in: .capsule )
                                             
-                                            // TÍTULO DO MÊS
-                                            Text(group.key)
-                                                .font(.title2)
-                                                .fontWeight(.bold)
-                                                .padding(.horizontal)
+                                          
+                                        }
+                                    ) {
+                                        // Conteúdo
+                                        if viewModel.isLoading {
+                                            ProgressView("Carregando filmes...")
+                                                .padding(.top, 100)
+                                        } else if filteredEvents.isEmpty {
+                                            EmptyStateView(
+                                                icon: searchText.isEmpty ? "star" : "magnifyingglass",
+                                                message: searchText.isEmpty ?
+                                                "Você ainda não tem filmes favoritos." :
+                                                    "Não encontramos nenhum filme com o nome '\(searchText)'."
+                                            )
+                                            .padding(.top, 100)
+                                        } else {
                                             
-                                            // Carrossel na esquerda
-                                            MovieFlatCarousel(events: group.value, viewModel: viewModel)
+                                            // Espaçamento entre os meses
+                                            LazyVStack(spacing: 30) {
+                                                ForEach(groupedEvents, id: \.key) { group in
+                                                    VStack(alignment: .leading, spacing: 14) {
+                                                        Text(group.key)
+                                                            .font(.title2)
+                                                            .fontWeight(.bold)
+                                                            .padding(.horizontal)
+                                                        
+                                                        MovieFlatCarossel(events: group.value, viewModel: viewModel)
+                                                            .id("\(currentTab)-\(group.key)")
+                                                    }
+                                                }
+                                            }
+                                            .padding(.vertical, 20)
                                         }
                                     }
                                 }
                             }
-                            .padding(.vertical)
+                            .refreshable {
+                                await viewModel.loadEvents()
+                            }
                         }
-                        .refreshable {
-                            await viewModel.loadEvents()
+                        .navigationTitle("Filmes")
+                      
+                        .navigationBarTitleDisplayMode(.inline)
+                        .task {
+                            if viewModel.events.isEmpty {
+                                await viewModel.loadEvents()
+                            }
                         }
                     }
-                }
-                .navigationTitle("Filmes")
-                .task {
-                    
-                    if viewModel.events.isEmpty {
-                        await viewModel.loadEvents()
-                    }
-                }
-            }
             .onTapGesture {
                 hideKeyboard()
             }

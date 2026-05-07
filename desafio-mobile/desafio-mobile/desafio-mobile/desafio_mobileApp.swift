@@ -12,6 +12,7 @@ struct desafio_mobileApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .preferredColorScheme(.dark)
         }
     }
 }

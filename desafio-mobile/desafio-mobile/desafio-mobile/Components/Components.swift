@@ -189,13 +189,32 @@ struct SearchBar: View {
         HStack {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(.gray)
+            
             TextField(placeholder, text: $text)
                 .textInputAutocapitalization(.never)
+            
+           
+            if !text.isEmpty {
+                Button(action: {
+                    
+                    text = ""
+                    
+                   
+                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .padding(.trailing, 4)
+                }
+            
+
+                .transition(.opacity)
+            }
         }
         .padding(10)
-        .background(Color(.systemGray6))
+        .background(.ultraThinMaterial)
         .cornerRadius(12)
         .padding(.horizontal)
+        .animation(.default, value: text.isEmpty)
     }
 }
 struct EmptyStateView: View {
@@ -222,71 +241,46 @@ struct FavoriteButton: View {
     var size: Font = .body
     var padding: CGFloat = 8
 
-    var body: some View {
-        Button {
-            viewModel.toggleFavorite(event: event)
-        } label: {
-            Image(systemName: viewModel.favoriteIDs.contains(event.id) ? "star.fill" : "star")
-                .font(size)
-                .foregroundColor(viewModel.favoriteIDs.contains(event.id) ? .yellow : .white)
-                .padding(padding)
-                .glassEffect(.regular.interactive(), in: .circle )
-                .clipShape(Circle())
-        }
-    }
-}
-struct MovieMonthCarousel: View {
-    let monthTitle: String
-    let events: [Event]
-    @ObservedObject var viewModel: EventViewModel
-    @State private var scrollOffset: CGFloat = 0
-    @State private var currentIndex: Int = 0
-    
-    let cardWidth: CGFloat = 150
-    let spacing: CGFloat = 20
+
+    @State private var isFav: Bool = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(monthTitle)
-                .font(.title3)
-                .bold()
-                .padding(.horizontal)
+        Button {
+         
+            let impact = UIImpactFeedbackGenerator(style: .light)
+            impact.impactOccurred()
             
-            ZStack {
-                ForEach(Array(events.enumerated()), id: \.element.id) { index, event in
-                    NavigationLink(destination: EventDetailView(event: event, viewModel: viewModel)) {
-                        MovieCardView(event: event, viewModel: viewModel)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-               
-                    .scaleEffect(currentIndex == index ? 1.0 : 0.8)
-                    .blur(radius: currentIndex == index ? 0 : 1)
-                    .offset(x: CGFloat(index - currentIndex) * (cardWidth + spacing) + scrollOffset)
-                }
+            
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                isFav.toggle()
             }
-            .frame(height: 250) // Altura do carrossel
-            .gesture(
-                DragGesture()
-                    .onChanged { gesture in
-                        scrollOffset = gesture.translation.width
-                    }
-                    .onEnded { gesture in
-                        let threshold: CGFloat = 50
-                        if gesture.translation.width < -threshold && currentIndex < events.count - 1 {
-                            currentIndex += 1
-                        } else if gesture.translation.width > threshold && currentIndex > 0 {
-                            currentIndex -= 1
-                        }
-                        withAnimation(.spring()) {
-                            scrollOffset = 0
-                        }
-                    }
-            )
+            
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.10) {
+                viewModel.toggleFavorite(event: event)
+            }
+            
+        } label: {
+            Image(systemName: isFav ? "star.fill" : "star")
+                .font(size)
+                .foregroundColor(isFav ? .yellow : .white)
+                .padding(padding)
+                .glassEffect(.regular.interactive(), in: .circle)
+                .clipShape(Circle())
+                // Um efeito extra de pulso visual quando clica!
+                .scaleEffect(isFav ? 1.15 : 1.0)
         }
-        .padding(.vertical)
+        .onAppear {
+            // Sincroniza o botão quando ele entra na tela
+            isFav = viewModel.favoriteIDs.contains(event.id)
+        }
+        .onChange(of: viewModel.favoriteIDs) { oldValue, newValue in
+          
+                    isFav = newValue.contains(event.id)
+                }
     }
 }
-struct MovieFlatCarousel: View {
+struct MovieFlatCarossel: View {
     let events: [Event]
     @ObservedObject var viewModel: EventViewModel
     
@@ -307,65 +301,110 @@ struct MovieFlatCarousel: View {
     var body: some View {
         GeometryReader { geo in
             
-            ZStack(alignment: .leading) {
-                ForEach(Array(events.enumerated()), id: \.element.id) { index, event in
+            ZStack {
+                if !events.isEmpty {
                     
-                    let diff = CGFloat(index - currentIndex)
-                    let dragFactor = dragOffset / spacing
-                    let effectiveDiff = diff - dragFactor
-                    let absEffectiveDiff = abs(effectiveDiff)
                     
-                   // Renderização pra suavizar a fluidez
-                    if absEffectiveDiff <= 4.5 {
+                    let isInfinite = events.count > 5
+                    
+                   
+                    let displayRange = isInfinite ? Array((currentIndex - 5)...(currentIndex + 5)) : Array(0..<events.count)
+                    
+                    ForEach(displayRange, id: \.self) { virtualIndex in
                         
-                        let scale = max(focusScale - (absEffectiveDiff * scaleSpread), 0.75)
-                        let blurRadius = min(absEffectiveDiff * 1.5, focusBlur)
-                        let zIndex = Double(events.count) - absEffectiveDiff
-                        let offset = (diff * spacing) + dragOffset
-                        let shadowOpacity = max(0.4 - (absEffectiveDiff * 0.1), 0.1)
-
-                        NavigationLink(destination: EventDetailView(event: event, viewModel: viewModel)) {
-                            MovieCardView(event: event, viewModel: viewModel)
-                                .blur(radius: blurRadius)
-                                .shadow(color: .black.opacity(shadowOpacity), radius: scale == focusScale ? 15 : 6, y: 8)
+                 
+                        let realIndex = isInfinite ? (virtualIndex % events.count + events.count) % events.count : virtualIndex
+                        let event = events[realIndex]
+                        
+                        let diff = CGFloat(virtualIndex - currentIndex)
+                        let dragFactor = dragOffset / spacing
+                        let effectiveDiff = diff - dragFactor
+                        let absEffectiveDiff = abs(effectiveDiff)
+                        
+                        if absEffectiveDiff <= 4.5 {
+                            
+                            let scale = max(focusScale - (absEffectiveDiff * scaleSpread), 0.75)
+                            let blurRadius = min(absEffectiveDiff * 1.5, focusBlur)
+                            let zIndex = Double(events.count) - absEffectiveDiff
+                            let offset = (diff * spacing) + dragOffset
+                            let shadowOpacity = max(0.4 - (absEffectiveDiff * 0.1), 0.1)
+                            
+                            NavigationLink(destination: EventDetailView(event: event, viewModel: viewModel)) {
+                                MovieCardView(event: event, viewModel: viewModel)
+                                    .blur(radius: blurRadius)
+                                    .shadow(color: .black.opacity(shadowOpacity), radius: scale == focusScale ? 15 : 6, y: 8)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .disabled(virtualIndex != currentIndex)
+                            .frame(width: cardWidth, height: cardHeight)
+                            .scaleEffect(scale)
+                            .offset(x: offset)
+                            .offset(y: (cardHeight * (focusScale - 1)) / 2)
+                            .zIndex(zIndex)
+                            .animation(.interactiveSpring(response: 0.4, dampingFraction: 0.8), value: dragOffset)
+                            .animation(.spring(response: 0.5, dampingFraction: 0.85), value: currentIndex)
                         }
-                        .buttonStyle(PlainButtonStyle())
-                        .frame(width: cardWidth, height: cardHeight)
-                        .scaleEffect(scale)
-                        .offset(x: offset)
-                        .zIndex(zIndex)
-                        .animation(.interactiveSpring(response: 0.4, dampingFraction: 0.8), value: dragOffset)
-                        .animation(.spring(response: 0.5, dampingFraction: 0.85), value: currentIndex)
                     }
                 }
             }
-            
-            .offset(x: 16)
+            .onChange(of: events.count) { oldCount, newCount in
+                       
+                        if newCount == 0 {
+                            currentIndex = 0
+                        } else if newCount <= 5 {
+                            if currentIndex >= newCount {
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                    currentIndex = newCount - 1
+                                }
+                            } else if currentIndex < 0 {
+                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                                    currentIndex = 0
+                                }
+                            }
+                        }
+                    }
+            .frame(width: geo.size.width)
             
             // Container do gesto
             .background(Color.clear.contentShape(Rectangle()))
-            .gesture(
-                DragGesture()
-                    .onChanged { gesture in
-                        dragOffset = gesture.translation.width
-                    }
-                    .onEnded { gesture in
-                        // Lógica de SNAP ajustada para ser mais responsiva
-                        let velocity = gesture.predictedEndTranslation.width / spacing
-                        let threshold: CGFloat = velocity > 0.5 ? 0.3 : 0.7
-                        
-                      
-                        // Spring com dampingfraction menor para um efeito elástico e fluido
-                        withAnimation(.spring(response: 0.5, dampingFraction: 0.82)) {
-                            if gesture.translation.width < -spacing * threshold && currentIndex < events.count - 1 {
-                                currentIndex += 1
-                            } else if gesture.translation.width > spacing * threshold && currentIndex > 0 {
-                                currentIndex -= 1
-                            }
-                            dragOffset = 0
-                        }
-                    }
-            )
+            .highPriorityGesture(
+                            DragGesture()
+                                .onChanged { gesture in
+                                    dragOffset = gesture.translation.width
+                                }
+                                .onEnded { gesture in
+                                    let velocity = gesture.predictedEndTranslation.width / spacing
+                                    let threshold: CGFloat = velocity > 0.5 ? 0.3 : 0.7
+                                    let isInfinite = events.count > 5
+                                    
+                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.82)) {
+                                        
+                                        // Flag
+                                        var indexChanged = false
+                                        
+                                        if gesture.translation.width < -spacing * threshold {
+                                            if isInfinite || currentIndex < events.count - 1 {
+                                                currentIndex += 1
+                                                indexChanged = true
+                                            }
+                                        } else if gesture.translation.width > spacing * threshold {
+                                            if isInfinite || currentIndex > 0 {
+                                                currentIndex -= 1
+                                                indexChanged = true
+                                            }
+                                        }
+                                        
+                                        // Haptic
+                                        if indexChanged {
+                                            let generator = UISelectionFeedbackGenerator()
+                                            generator.prepare()
+                                            generator.selectionChanged()
+                                        }
+                                        
+                                        dragOffset = 0
+                                    }
+                                }
+                        )
         }
         // Altura total reservada para os cards maiores e escalas
         .frame(height: (cardHeight * focusScale) + 40)
