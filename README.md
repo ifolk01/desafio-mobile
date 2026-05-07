@@ -37,7 +37,17 @@
   
   * Pasta Components: 
      Centraliza elementos visuais reutilizáveis (como `EventPosterImage`, `GenreBadge`, `PrimaryButton`, entre outros)
+     Extração de elementos de UI (SearchBar, FavoriteButton, EmptyState) para um catálogo de componentes, reduzindo a complexidade das Views principais.
   
+  *Sincronização de Estado Reativa: 
+    Utilização de `Set<String>` no ViewModel para gerenciamento global de favoritos, garantindo que a alteração de estado em uma tela (Detail) reflita instantaneamente em outras (Home/Card)
+  
+  *User Experience (UX): 
+    Implementação de `hideKeyboard()` via `UIApplication` para melhorar a navegabilidade durante a busca.
+    Feedback visual de "Empty State" customizado para buscas sem resultados.
+    Transições suaves entre filtros utilizando `matchedGeometryEffect`.
+    "Management Pattern". Isso significa que minha UI reage de forma inteligente a três estados: Loading (Carregando), Empty (Vazio) e Content (Conteúdo).
+    
   * Responsabilidade única:
      Cada componente foca em uma única tarefa visual, facilitando a manutenção e garantindo a consistência estética em todo o app.
     

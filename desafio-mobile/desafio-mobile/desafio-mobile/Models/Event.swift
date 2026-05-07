@@ -22,6 +22,7 @@ struct Event: Codable, Identifiable {
         let imageFeatured: String?
         let images: [EventImage]
         let premiereDate: PremiereDate?
+        var isFavorite: Bool = false
     
     // Mapeamento de nomes
     enum CodingKeys: String, CodingKey {
@@ -32,7 +33,7 @@ struct Event: Codable, Identifiable {
     
     // Lógica para o Poster
     var posterURL: String? {
-        // Tenta pegar o Portrait
+        
         if let portrait = images.first(where: { $0.type == "PosterPortrait" })?.url, !portrait.isEmpty {
             return portrait
         }

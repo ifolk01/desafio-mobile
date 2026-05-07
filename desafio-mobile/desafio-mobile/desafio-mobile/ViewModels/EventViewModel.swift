@@ -14,6 +14,7 @@ class EventViewModel: ObservableObject {
     @Published var events: [Event] = []
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var favoriteIDs: Set<String> = []
     
     private let service = EventService()
     
@@ -25,8 +26,8 @@ class EventViewModel: ObservableObject {
         do {
             let fetchedEvents = try await service.fetchComingSoonEvents()
             
-            // Requisito 5: Ordenar os filmes pela data de estreia (premiereDate)
-            // Filmes sem data (nil) ficam por último
+            // Ordenar os filmes pela data de estreia 
+  
             self.events = fetchedEvents.sorted { (event1, event2) -> Bool in
                 guard let date1 = event1.premiereDate?.localDate else { return false }
                 guard let date2 = event2.premiereDate?.localDate else { return true }
@@ -39,4 +40,17 @@ class EventViewModel: ObservableObject {
             isLoading = false
         }
     }
+    
+    func toggleFavorite(event: Event) {
+            if favoriteIDs.contains(event.id) {
+                favoriteIDs.remove(event.id)
+            } else {
+                favoriteIDs.insert(event.id)
+            }
+        objectWillChange.send()
+        }
+        
+        func isFavorite(_ event: Event) -> Bool {
+            favoriteIDs.contains(event.id)
+        }
 }

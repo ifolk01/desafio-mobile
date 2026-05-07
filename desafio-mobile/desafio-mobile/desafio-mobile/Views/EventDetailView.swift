@@ -10,6 +10,7 @@ import SwiftUI
 struct EventDetailView: View {
     let event: Event
     @State private var retryID = UUID()
+    @ObservedObject var viewModel: EventViewModel
     
     var body: some View {
         ScrollView {
@@ -30,25 +31,30 @@ struct EventDetailView: View {
             
                 
                 VStack(alignment: .leading, spacing: 20) {
-                    
-                    // Título e Categorias
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(event.title)
-                            .font(.system(.title, design: .rounded))
-                            .bold()
-                        
-                        // Lista de Gêneros
-                        if let genres = event.genres {
-                            HStack {
-                                ForEach(genres, id: \.self) { genre in
-                                    GenreBadge(text: genre)
-                                }
-                            }
-                        }
-                    }
-                    .padding(.top)
+                                    
+                                 
+                                    HStack(alignment: .top) {
+                                        Text(event.title)
+                                            .font(.system(.title, design: .rounded))
+                                            .bold()
+                                        
+                                        Spacer()
+                                        
+                                       
+                                        FavoriteButton(event: event, viewModel: viewModel, size: .body, padding: 8.0)
+                                    }
+                                    .padding(.top)
+                                    
+                                    // Lista de Gêneros
+                                    if let genres = event.genres {
+                                        HStack {
+                                            ForEach(genres, id: \.self) { genre in
+                                                GenreBadge(text: genre)
+                                            }
+                                        }
+                                    }
 
-                    Divider()
+                                    Divider()
 
                     // Sinopse
                     VStack(alignment: .leading, spacing: 10) {
@@ -82,25 +88,18 @@ struct EventDetailView: View {
         }
         .navigationTitle(event.title)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    // Inserir a lógica de dar share
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                }
+            }
+        }
         .background(Color(uiColor: .systemBackground))
     }
 }
 
 
-#Preview {
-    NavigationStack {
-        EventDetailView(event: Event(
-            id: "1",
-            title: "Batman",
-            synopsis: "O Cavaleiro das Trevas enfrenta o Coringa em Gotham.", 
-            cast: "Christian Bale, Heath Ledger",
-            contentRating: "14",
-            duration: "152 min",
-            genres: ["Ação", "Drama"],
-            inPreSale: false,
-            imageFeatured: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDp9QmSJJVIzYv9miv6.jpg",
-            images: [],
-            premiereDate: nil
-        ))
-    }
-}
+

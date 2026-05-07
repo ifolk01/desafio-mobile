@@ -71,7 +71,6 @@ struct EventPosterImage: View {
         .clipped()
     }
 }
-
 struct PlaceholderCard: View {
     var width: CGFloat?
     var height: CGFloat?
@@ -146,6 +145,90 @@ struct PrimaryButton: View {
             .foregroundColor(.white)
             .cornerRadius(12)
             .shadow(color: .blue.opacity(0.3), radius: 5, x: 0, y: 3)
+        }
+    }
+}
+struct FilterTabButton: View {
+    let title: String
+    @Binding var current: String
+    var animation: Namespace.ID
+    
+    var body: some View {
+        Button {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                current = title
+            }
+        } label: {
+            VStack(spacing: 6) {
+                Text(title)
+                    .font(.system(size: 14, weight: current == title ? .bold : .medium))
+                    .foregroundColor(current == title ? .blue : .gray)
+                
+                if current == title {
+                    Capsule()
+                        .fill(Color.blue)
+                        .frame(height: 3)
+                        .matchedGeometryEffect(id: "tab_underline", in: animation)
+                } else {
+                    Capsule()
+                        .fill(Color.clear)
+                        .frame(height: 3)
+                }
+            }
+        }
+    }
+}
+struct SearchBar: View {
+    @Binding var text: String
+    var placeholder: String = "Buscar..."
+
+    var body: some View {
+        HStack {
+            Image(systemName: "magnifyingglass")
+                .foregroundColor(.gray)
+            TextField(placeholder, text: $text)
+                .textInputAutocapitalization(.never)
+        }
+        .padding(10)
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+        .padding(.horizontal)
+    }
+}
+struct EmptyStateView: View {
+    let icon: String
+    let message: String
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Spacer()
+            Image(systemName: icon)
+                .font(.system(size: 40))
+                .foregroundColor(.gray)
+            Text(message)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+            Spacer()
+        }
+    }
+}
+struct FavoriteButton: View {
+    let event: Event
+    @ObservedObject var viewModel: EventViewModel
+    var size: Font = .body
+    var padding: CGFloat = 8
+
+    var body: some View {
+        Button {
+            viewModel.toggleFavorite(event: event)
+        } label: {
+            Image(systemName: viewModel.favoriteIDs.contains(event.id) ? "star.fill" : "star")
+                .font(size)
+                .foregroundColor(viewModel.favoriteIDs.contains(event.id) ? .yellow : .white)
+                .padding(padding)
+                .background(Color.black.opacity(0.3))
+                .clipShape(Circle())
         }
     }
 }
