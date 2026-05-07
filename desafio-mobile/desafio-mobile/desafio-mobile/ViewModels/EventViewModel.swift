@@ -16,6 +16,8 @@ class EventViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var favoriteIDs: Set<String> = []
     
+    
+    
     private let service = EventService()
     
     // Função para carregar os dados
@@ -53,4 +55,21 @@ class EventViewModel: ObservableObject {
         func isFavorite(_ event: Event) -> Bool {
             favoriteIDs.contains(event.id)
         }
+    
+    
+}
+
+extension String {
+    func formatToMonthYear() -> String {
+        let inputFormatter = DateFormatter()
+        inputFormatter.dateFormat = "yyyy-MM"
+        
+        if let date = inputFormatter.date(from: self) {
+            let outputFormatter = DateFormatter()
+            outputFormatter.locale = Locale(identifier: "pt_BR")
+            outputFormatter.dateFormat = "MMMM yyyy"
+            return outputFormatter.string(from: date).capitalized
+        }
+        return "Em breve"
+    }
 }

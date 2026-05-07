@@ -17,7 +17,7 @@ struct MovieCardView: View {
            
             ZStack(alignment: .topTrailing) {
                 // O Poster
-                EventPosterImage(urlString: event.posterURL, retryID: $retryID, width: 110, height: 160)
+                EventPosterImage(urlString: event.posterURL, retryID: $retryID, width: 110, height: 170)
                 
                 // Botão de Favorito
                 FavoriteButton(event: event, viewModel: viewModel, size: .body, padding: 8.0)
@@ -35,17 +35,21 @@ struct MovieCardView: View {
                     .padding(4)
                 }
             }
-            .frame(width: 110, height: 160) 
+            .frame(width: 110, height: 170)
             
            
             Text(event.title)
-                .font(.caption)
-                .bold()
-                .lineLimit(3, reservesSpace: true)
-                .multilineTextAlignment(.leading)
-                .minimumScaleFactor(0.8)
-                .frame(width: 110, alignment: .topLeading)
-                .foregroundColor(.primary)
+                            .font(.caption)
+                            .bold()
+                            .lineLimit(3, reservesSpace: true)
+                            .multilineTextAlignment(.leading)
+                            .minimumScaleFactor(0.8)
+                            .foregroundColor(.primary)
+                            // 1. Garante que o texto ocupe a largura toda do card
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                            // 2. O SEGREDO: Margens para o texto não colar nas bordas do fundo branco!
+                            .padding(.horizontal, 10)
+                            .padding(.bottom, 12)
         }
     }
 }

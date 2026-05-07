@@ -10,31 +10,73 @@ struct ContentView: View {
     @State private var searchText = ""
     @State private var currentTab = "Últimas Estreias"
     @Namespace var animation
+    var filteredEvents: [Event] {
+            let list: [Event]
+            
+            switch currentTab {
+            case "Últimas Estreias":
+                list = viewModel.events.filter { event in
+                    // Extrai o ano da data (seja do campo year ou do prefixo da localDate)
+                    let year = event.premiereDate?.year ?? String(event.premiereDate?.localDate?.prefix(4) ?? "")
+                    
+                    // Regra: Somente filmes de 2026 que NÃO estão em pré-venda
+                    return year == "2026" && event.inPreSale == false
+                }
+                
+            case "Em Breve":
+                list = viewModel.events.filter { event in
+                    let year = event.premiereDate?.year ?? String(event.premiereDate?.localDate?.prefix(4) ?? "")
+                    
+                    // Regra: Qualquer filme de 2027 pra frente OU qualquer filme em pré-venda
+                    return year >= "2027" 
+                }
+                
+            case "Favoritos":
+                list = viewModel.events.filter { viewModel.isFavorite($0) }
+                
+            default:
+                list = viewModel.events
+            }
+            
+            // Filtro da barra de busca continua igual
+            if searchText.isEmpty {
+                return list
+            } else {
+                return list.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+            }
+        }
+    var groupedEvents: [(key: String, value: [Event])] {
+        // 1. Agrupamos os filmes filtrados (seja Estreias ou Favoritos)
+        let dictionary = Dictionary(grouping: filteredEvents) { event -> String in
+            if let localDate = event.premiereDate?.localDate, localDate.count >= 7 {
+                return String(localDate.prefix(7)) // Ex: "2026-05"
+            }
+            return "9999-12"
+        }
+        
+        // 2. Ordenamos as chaves (os meses) para que Maio venha antes de Junho
+        let sortedKeys = dictionary.keys.sorted()
+        
+        // 3. Mapeamos para o formato da View, garantindo a ordem interna dos filmes
+        return sortedKeys.map { key in
+            let displayTitle = key == "9999-12" ? "Em breve" : key.formatToMonthYear()
+            
+            // CORREÇÃO: Ordenamos os filmes deste mês específico por data de estreia
+            let sortedMoviesForMonth = (dictionary[key] ?? []).sorted {
+                let date1 = $0.premiereDate?.localDate ?? ""
+                let date2 = $1.premiereDate?.localDate ?? ""
+                return date1 < date2 // Ordem Crescente: 01/05 vem antes de 15/05
+            }
+            
+            return (key: displayTitle, value: sortedMoviesForMonth)
+        }
+    }
     
     func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
     
-    var filteredEvents: [Event] {
-        let list: [Event]
-        
-        switch currentTab {
-        case "Últimas Estreias":
-            list = viewModel.events.filter { $0.inPreSale == false }
-        case "Em Breve":
-            list = viewModel.events.filter { $0.inPreSale == true }
-        case "Favoritos":
-            list = viewModel.events.filter { viewModel.isFavorite($0) }
-        default:
-            list = viewModel.events
-        }
-        
-        if searchText.isEmpty {
-            return list
-        } else {
-            return list.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
-        }
-    }
+   
     
     var body: some View {
         TabView {
@@ -70,15 +112,37 @@ struct ContentView: View {
                         )
                     } else {
                         ScrollView {
-                            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
-                                ForEach(filteredEvents) { event in
-                                    NavigationLink(destination: EventDetailView(event: event, viewModel: viewModel)) {
-                                        MovieCardView(event: event, viewModel: viewModel)
+                            LazyVStack(spacing: 10) { // Espaçamento vertical entre os meses
+                                
+                                if viewModel.isLoading {
+                                    ProgressView("Buscando filmes...")
+                                        .padding(.top, 50)
+                                } else if groupedEvents.isEmpty {
+                                    // Estado vazio para busca ou favoritos vazios
+                                    EmptyStateView(
+                                        icon: currentTab == "Favoritos" ? "star" : "film",
+                                        message: currentTab == "Favoritos" ?
+                                            "Você ainda não favoritou nenhum filme." :
+                                            "Nenhum filme encontrado para '\(searchText)'."
+                                    )
+                                } else {
+                                    // Esta estrutura unifica a exibição de Estreias, Em Breve e Favoritos
+                                    ForEach(groupedEvents, id: \.key) { group in
+                                        VStack(alignment: .leading, spacing: 40) {
+                                            
+                                            // TÍTULO DO MÊS
+                                            Text(group.key)
+                                                .font(.title2)
+                                                .fontWeight(.bold)
+                                                .padding(.horizontal)
+                                            
+                                            // CARROSSEL PLANO ANCORADO NA ESQUERDA
+                                            MovieFlatCarousel(events: group.value, viewModel: viewModel)
+                                        }
                                     }
-                                    .buttonStyle(PlainButtonStyle())
                                 }
                             }
-                            .padding()
+                            .padding(.vertical)
                         }
                         .refreshable {
                             await viewModel.loadEvents()

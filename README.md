@@ -53,6 +53,12 @@
     
   * DRY: 
      Evita a duplicação de lógica visual complexa, como o tratamento de estados de carregamento e erro de imagens assíncronas.
+  
+  *Agrupamento Mensal Inteligente: 
+     Lógica avançada para organizar filmes por Mês/Ano, com separação automática entre estreias de 2026 e lançamentos futuros (2027).
+
+  *Ordenação Cronológica Estrita: 
+    Garantia de que todos os carrosséis (incluindo a aba de Favoritos) respeitam a ordem crescente das datas de estreia.
 
 5 - Funcionalidades e Melhorias de UI
 
@@ -67,3 +73,19 @@
 
   * Otimização de Imagens: 
      Implementação de estados de carregamento (Shimmer/ProgressView) e tratamento de erros de rede com botão de re-tentativa (Retry) integrado ao componente `AsyncImage`.
+
+  * Apple Guidelines - Design for iOS "Liquid Glass"
+
+     Efeitos Nativos: Integração do novo modificador .glassEffect e materials translúcidos para botões de favorito e etiquetas de data.
+
+    Clean Design: Otimização de espaçamentos e remoção de contentores visuais desnecessários, permitindo que a arte dos pósteres seja a protagonista da interface.
+    
+  * Carrossel Premium:
+
+     Efeito Leque Horizontal: Implementação de um sistema de carrossel ancorado à esquerda, com sobreposição inteligente de cartões.
+
+     Destaque Dinâmico: O filme em foco recebe um aumento de escala automático (focusScale: 1.2) e sombras profundas.
+
+     Blur: Uso de desfoque progressivo nos filmes em segundo plano para criar uma sensação de profundidade de campo profissional.
+
+     Física de Molas: Navegação fluida utilizando interactiveSpring, garantindo que os gestos de arrasto sejam responsivos e naturais.
