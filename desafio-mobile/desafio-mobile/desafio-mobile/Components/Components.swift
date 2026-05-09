@@ -67,7 +67,7 @@ struct EventPosterImage: View {
             }
         }
         .frame(width: width, height: height)
-        .cornerRadius(8)
+        .cornerRadius(7)
         .clipped()
     }
 }
@@ -211,42 +211,7 @@ struct FilterTabButton: View {
         }
     }
 }
-struct SearchBar: View {
-    @Binding var text: String
-    var placeholder: String = "Buscar..."
 
-    var body: some View {
-        HStack {
-            Image(systemName: "magnifyingglass")
-                .foregroundColor(.gray)
-            
-            TextField(placeholder, text: $text)
-                .textInputAutocapitalization(.never)
-            
-           
-            if !text.isEmpty {
-                Button(action: {
-                    
-                    text = ""
-                    
-                   
-                    UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .padding(.trailing, 4)
-                }
-            
-
-                .transition(.opacity)
-            }
-        }
-        .padding(10)
-        .background(.ultraThinMaterial)
-        .cornerRadius(12)
-        .padding(.horizontal)
-        .animation(.default, value: text.isEmpty)
-    }
-}
 struct EmptyStateView: View {
     let icon: String
     let message: String
@@ -343,7 +308,7 @@ struct MovieFlatCarossel: View {
     // Fatores de Destaque
     let focusScale: CGFloat = 1.25
     let scaleSpread: CGFloat = 0.25
-    let focusBlur: CGFloat = 4.0
+    let focusBlur: CGFloat = 2.0
 
     var body: some View {
         GeometryReader { geo in
@@ -371,7 +336,7 @@ struct MovieFlatCarossel: View {
                         if absEffectiveDiff <= 4.5 {
                             
                             let scale = max(focusScale - (absEffectiveDiff * scaleSpread), 0.75)
-                            let blurRadius = min(absEffectiveDiff * 1.5, focusBlur)
+                            let blurRadius = min(absEffectiveDiff * 1.3, focusBlur)
                             let zIndex = Double(events.count) - absEffectiveDiff
                             let offset = (diff * spacing) + dragOffset
                             let shadowOpacity = max(0.4 - (absEffectiveDiff * 0.1), 0.1)
@@ -380,6 +345,7 @@ struct MovieFlatCarossel: View {
                                 MovieCardView(event: event, viewModel: viewModel)
                                     .blur(radius: blurRadius)
                                     .shadow(color: .black.opacity(shadowOpacity), radius: scale == focusScale ? 15 : 6, y: 8)
+                                    .animation(.easeInOut(duration: 0.3), value: currentIndex)
                             }
                             .buttonStyle(PlainButtonStyle())
                             .disabled(virtualIndex != currentIndex)
@@ -487,6 +453,18 @@ struct LocationButton: View {
             }
         }
      
+    }
+}
+struct AccountButton: View {
+    @Binding var showProfile: Bool
+    var body: some View {
+        Button(action: {
+                showProfile.toggle() 
+            }) {
+                Image(systemName: "person.crop.circle")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(.white)
+            }
     }
 }
 extension Color {

@@ -9,8 +9,11 @@ struct ContentView: View {
     @StateObject private var viewModel = EventViewModel()
     @StateObject private var locationManager = LocationManager()
     @State private var searchText = ""
+    @State private var isSearching = false
+    @FocusState private var isSearchFocused: Bool
     @State private var currentTab = "Em Breve"
     @Namespace var animation
+    @State private var showProfile = false
    
     var emptyStateContent: (icon: String, message: String) {
             if !searchText.isEmpty {
@@ -20,7 +23,7 @@ struct ContentView: View {
             switch currentTab {
             case "Favoritos":
                 return ("star", "Você ainda não tem filmes favoritos.")
-            case "Últimas Estreias":
+            case "Últ. Estreias":
                 return ("film", "Não há estreias recentes para exibir neste momento.")
             case "Em Breve":
                 return ("calendar", "Não há filmes previstos para os próximos meses.")
@@ -44,7 +47,7 @@ struct ContentView: View {
                 }
                 
                 switch currentTab {
-                case "Últimas Estreias":
+                case "Últ. Estreias":
                   
                     return !eventDate.isEmpty && eventDate <= todayString
                     
@@ -110,23 +113,22 @@ struct ContentView: View {
                         
                         LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
                             
-                            // Busca
-                            SearchBar(text: $searchText, placeholder: "Buscar...")
-                                .padding(.top, 10)
-                                .padding(.bottom, 20)
+
+
                             
                             // Seções
                             Section(header:
                                         VStack(spacing: 0) {
-                                HStack(spacing: 25) {
-                                    FilterTabButton(title: "Últimas Estreias", current: $currentTab, animation: animation)
+                                HStack(spacing: 35) {
+                                    FilterTabButton(title: "Últ. Estreias", current: $currentTab, animation: animation)
                                     FilterTabButton(title: "Em Breve", current: $currentTab, animation: animation)
                                     FilterTabButton(title: "Favoritos", current: $currentTab, animation: animation)
                                 }
                                 .padding(.vertical, 10)
                                 .padding(.horizontal)
-                                .frame(maxWidth: .infinity)
+                                .frame(maxWidth: 365)
                                 .glassEffect(.regular.interactive(), in: .capsule )
+                                .padding(10)
                                 
                                 
                             }
@@ -165,26 +167,95 @@ struct ContentView: View {
                         await viewModel.loadEvents()
                     }
                 }
-                .navigationTitle("Filmes")
-                
-                .navigationBarTitleDisplayMode(.inline)
-                
-                .toolbar {
-                         
-                            ToolbarItem(placement: .topBarLeading) {
-                                LocationButton(locationManager: locationManager)
-                            }
-                        }
-                        .onAppear {
-                            // Pede localização ao entrar no app
-                            locationManager.requestPermission()
-                        }
-                .task {
-                    if viewModel.events.isEmpty {
-                        await viewModel.loadEvents()
-                    }
-                }
-            }
+                .navigationTitle(isSearching ? "" : "Filmes")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            if isSearching {
+                                
+                                // O Campo de Texto assume o lugar do Título
+                                ToolbarItem(placement: .principal) {
+                                    HStack {
+                                        Image(systemName: "magnifyingglass")
+                                            .foregroundColor(.gray)
+                                        
+                                        TextField("Buscar...", text: $searchText)
+                                            .focused($isSearchFocused)
+                                            .textInputAutocapitalization(.never)
+                                        
+                                        if !searchText.isEmpty {
+                                            Button(action: {
+                                                searchText = ""
+                                            }) {
+                                                Image(systemName: "xmark.circle.fill")
+                                                    .foregroundColor(.gray)
+                                            }
+                                        }
+                                    }
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .glassEffect()
+                                    .cornerRadius(10)
+                                    .frame(width: 260)
+                                }
+                                
+                                // Botão Cancelar no canto direito
+                                ToolbarItem(placement: .topBarTrailing) {
+                                    Button("Cancelar") {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                            isSearching = false
+                                            searchText = ""
+                                            isSearchFocused = false
+                                        }
+                                    }
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(.blue)
+                                }
+                                
+                            } else {
+                        
+                                ToolbarItem(placement: .topBarLeading) {
+                                    LocationButton(locationManager: locationManager)
+                                }
+                                
+                                ToolbarItem(placement: .topBarTrailing) {
+                                                                    // Agrupando Lupa e Conta
+                                                                    HStack(spacing: 16) {
+                                                                        Button(action: {
+                                                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                                                                isSearching = true
+                                                                                isSearchFocused = true
+                                                                            }
+                                                                        }) {
+                                                                            Image(systemName: "magnifyingglass")
+                                                                                .font(.system(size: 18, weight: .semibold))
+                                                                                .foregroundColor(.white)
+                                                                        }
+                                                                        
+                                                                        AccountButton(showProfile: $showProfile)
+                                                                    }
+                                                                    .padding(.horizontal, 16)
+                                                                    .padding(.vertical, 8)
+                                                                  
+                                                                }
+                                                               
+                                                            }
+                                                            
+                                                        }
+                                                
+                                                       
+                                                        .fullScreenCover(isPresented: $showProfile) {
+                                                            ProfileView()
+                                                        }
+                                                        .onAppear {
+                                               
+                                                            locationManager.requestPermission()
+                                                        }
+                                                .task {
+                                                    if viewModel.events.isEmpty {
+                                                        await viewModel.loadEvents()
+                                                    }
+                                                }
+                                            } 
             .onTapGesture {
                 hideKeyboard()
             }

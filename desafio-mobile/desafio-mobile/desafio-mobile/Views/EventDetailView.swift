@@ -167,7 +167,7 @@ struct EventDetailView: View {
                              let eventCity = event.city,
                              userCity.localizedCaseInsensitiveContains(eventCity) {
                               
-                              Text("ingresso disponível na sua localização")
+                              Text("ingressos disponíveis na sua localização")
                                 .font(.system(size: 7, weight: .semibold))
                                   .foregroundColor(.gray)
                           }
