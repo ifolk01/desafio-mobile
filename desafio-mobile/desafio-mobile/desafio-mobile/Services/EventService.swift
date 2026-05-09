@@ -8,7 +8,7 @@
 import Foundation
 
 class EventService {
-    // A URL da API
+
     private let urlString = "https://api-content.ingresso.com/v0/events/coming-soon/partnership/desafio"
     
     // Função que da um search nos filmes

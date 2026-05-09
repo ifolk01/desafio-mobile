@@ -8,42 +8,55 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var viewModel = EventViewModel()
     @State private var searchText = ""
-    @State private var currentTab = "Últimas Estreias"
+    @State private var currentTab = "Em Breve"
     @Namespace var animation
    
-    var filteredEvents: [Event] {
-            let list: [Event]
-            
-            switch currentTab {
-            case "Últimas Estreias":
-                list = viewModel.events.filter { event in
-                    // Extrai o ano da data
-                    let year = event.premiereDate?.year ?? String(event.premiereDate?.localDate?.prefix(4) ?? "")
-                    
-                    //Somente filmes de 2026 que NÃO estão em pré-venda
-                    return year == "2026" && event.inPreSale == false
-                }
-                
-            case "Em Breve":
-                list = viewModel.events.filter { event in
-                    let year = event.premiereDate?.year ?? String(event.premiereDate?.localDate?.prefix(4) ?? "")
-                    
-                    // Qualquer filme de 2027 pra frente OU qualquer filme em pré-venda
-                    return year >= "2027" || event.inPreSale
-                }
-                
-            case "Favoritos":
-                list = viewModel.events.filter { viewModel.isFavorite($0) }
-                
-            default:
-                list = viewModel.events
+    var emptyStateContent: (icon: String, message: String) {
+            if !searchText.isEmpty {
+                return ("magnifyingglass", "Não encontramos nenhum filme com o nome '\(searchText)'.")
             }
             
-            // Filtro da barra de busca
-            if searchText.isEmpty {
-                return list
-            } else {
-                return list.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+            switch currentTab {
+            case "Favoritos":
+                return ("star", "Você ainda não tem filmes favoritos.")
+            case "Últimas Estreias":
+                return ("film", "Não há estreias recentes para exibir neste momento.")
+            case "Em Breve":
+                return ("calendar", "Não há filmes previstos para os próximos meses.")
+            default:
+                return ("questionmark.circle", "Nenhum filme encontrado.")
+            }
+        }
+    var filteredEvents: [Event] {
+            let today = Date()
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            let todayString = formatter.string(from: today)
+            
+            return viewModel.events.filter { event in
+                // Pega exatamente a string "2026-05-07"
+                let eventDate = String(event.premiereDate?.localDate?.prefix(10) ?? "")
+                
+                // Filtro da barra de busca
+                if !searchText.isEmpty {
+                    guard event.title.localizedCaseInsensitiveContains(searchText) else { return false }
+                }
+                
+                switch currentTab {
+                case "Últimas Estreias":
+                  
+                    return !eventDate.isEmpty && eventDate <= todayString
+                    
+                case "Em Breve":
+          
+                    return eventDate > todayString || eventDate.isEmpty
+                    
+                case "Favoritos":
+                    return viewModel.isFavorite(event)
+                    
+                default:
+                    return true
+                }
             }
         }
     var groupedEvents: [(key: String, value: [Event])] {
@@ -51,7 +64,7 @@ struct ContentView: View {
         //Filmes filtrados em Estreias ou Favoritos
         let dictionary = Dictionary(grouping: filteredEvents) { event -> String in
             if let localDate = event.premiereDate?.localDate, localDate.count >= 7 {
-                return String(localDate.prefix(7)) // Ex: "2026-05"
+                return String(localDate.prefix(7))
             }
             return "9999-12"
         }
@@ -119,16 +132,13 @@ struct ContentView: View {
                                     ) {
                                         // Conteúdo
                                         if viewModel.isLoading {
-                                            ProgressView("Carregando filmes...")
-                                                .padding(.top, 100)
-                                        } else if filteredEvents.isEmpty {
-                                            EmptyStateView(
-                                                icon: searchText.isEmpty ? "star" : "magnifyingglass",
-                                                message: searchText.isEmpty ?
-                                                "Você ainda não tem filmes favoritos." :
-                                                    "Não encontramos nenhum filme com o nome '\(searchText)'."
-                                            )
-                                            .padding(.top, 100)
+                                                ProgressView("Carregando filmes...")
+                                                    .padding(.top, 100)
+                                            } else if filteredEvents.isEmpty {
+                                                
+                                                let content = emptyStateContent
+                                                EmptyStateView(icon: content.icon, message: content.message)
+                                                    .padding(.top, 100)
                                         } else {
                                             
                                             // Espaçamento entre os meses

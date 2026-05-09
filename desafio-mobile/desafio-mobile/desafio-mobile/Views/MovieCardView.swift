@@ -19,46 +19,48 @@ struct MovieCardView: View {
                 // O Poster
                 EventPosterImage(urlString: event.posterURL, retryID: $retryID, width: 110, height: 170)
                 
-                // Botão de Favorito
-                FavoriteButton(event: event, viewModel: viewModel, size: .body, padding: 8.0)
-                .padding(3)
-                
-                if event.inPreSale {
-                                   
-                                    VStack {
-                                        HStack {
-                                            Text("Pre-sale")
-                                                .font(.system(size: 8, weight: .heavy))
-                                                .kerning(1.5)
-                                                .foregroundColor(.white)
-                                                .padding(.horizontal, 6)
-                                                .padding(.vertical, 4)
-                                        
-                                                .glassEffect(.regular, in: .rect(cornerRadius: 6))
-                                              
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 6)
-                                                        .stroke(Color.white.opacity(0.3), lineWidth: 0.5)
-                                                )
-                                            
-                                            Spacer()
-                                        }
-                                        Spacer()
-                                    }
-                                    .padding(4) 
+                HStack(alignment: .top) {
+                                
+                                // Classificação indicativa
+                                if let rating = event.ratingDetails, let label = rating.label, !label.isEmpty {
+                                    AgeRatingBadge(rating: rating)
+                                        .scaleEffect(0.7)
+                                        .shadow(radius: 4)
                                 }
-                
-                //Badge de Estreia
-                if let premiere = event.premiereDate, let dateText = premiere.dayAndMonth {
+                                
+                                Spacer()
+                                
+                                
+                                FavoriteButton(event: event, viewModel: viewModel)
+                            }
+                            .padding(8)
+             
+                if event.inPreSale {
                     VStack {
                         Spacer()
-                        HStack {
-                            PremiereBadge(dateText: dateText)
-                            Spacer()
-                        }
+                        
+                        Text("PRÉ-VENDA")
+                            .font(.system(size: 7, weight: .bold, design: .rounded))
+                            .kerning(1.0)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 10)
+                            .glassEffect(.regular, in: .rect(
+                                topLeadingRadius: 0, bottomLeadingRadius: 10,
+                                bottomTrailingRadius: 10,
+                                topTrailingRadius: 0
+                            ))
+                            .overlay(
+                              
+                                Rectangle()
+                                    .frame(height: 0.5)
+                                    .foregroundColor(Color.white.opacity(0.3)),
+                                alignment: .top
+                            )
                     }
-                    .padding(4)
+                 
                 }
+               
             }
             .frame(width: 110, height: 170)
             

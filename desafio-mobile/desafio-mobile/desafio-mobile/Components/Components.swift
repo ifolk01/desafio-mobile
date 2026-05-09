@@ -89,15 +89,22 @@ struct PremiereBadge: View {
     let dateText: String
     
     var body: some View {
-        Text(dateText)
-            .font(.caption2)
-            .bold()
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .glassEffect(.regular.interactive(), in: .capsule )
-           
-            .cornerRadius(6)
-         
+        HStack(spacing: 6) {
+            Image(systemName: "calendar")
+                .font(.system(size: 12, weight: .bold))
+            
+            Text("Estreia \(dateText)")
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .textCase(.uppercase)
+        }
+        .foregroundColor(.white)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(
+            Capsule()
+             
+                .fill(Color.green.opacity(0.9))
+        )
     }
 }
 struct SectionHeader: View {
@@ -125,6 +132,29 @@ struct GenreBadge: View {
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(Color.secondary.opacity(0.1), lineWidth: 1)
             )
+    }
+}
+struct TrailerButton: View {
+    let url: URL
+    
+   
+    @Environment(\.openURL) private var openURL
+    
+    var body: some View {
+        Button {
+            openURL(url)
+        } label: {
+            HStack {
+                Image(systemName: "play.rectangle.fill")
+                Text("Trailer")
+            }
+            .font(.headline)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 14)
+            .glassEffect(.regular.interactive().tint(.red.opacity(0.8)), in: .capsule )
+            .foregroundColor(.white)
+            .cornerRadius(12)
+        }
     }
 }
 struct PrimaryButton: View {
@@ -235,11 +265,29 @@ struct EmptyStateView: View {
         }
     }
 }
+struct AgeRatingBadge: View {
+    let rating: RatingDetails
+    
+    var body: some View {
+        Text(rating.label ?? "L")
+            .font(.system(size: 12, weight: .bold, design: .rounded))
+            .foregroundColor(.white)
+            .frame(width: 24, height: 24)
+            .background(
+                RoundedRectangle(cornerRadius: 4)
+                // Usa a cor que veio da API através da nossa extensão!
+                    .fill(Color(hex: rating.color ?? "#4CAF50"))
+            )
+        // Se o usuário quiser ler, o VoiceOver vai ler o nome completo ("6 anos")
+            .accessibilityLabel(rating.name ?? "Livre")
+    }
+}
+
 struct FavoriteButton: View {
     let event: Event
     @ObservedObject var viewModel: EventViewModel
     var size: Font = .body
-    var padding: CGFloat = 8
+    var padding: CGFloat = 6
 
 
     @State private var isFav: Bool = false
@@ -267,8 +315,7 @@ struct FavoriteButton: View {
                 .padding(padding)
                 .glassEffect(.regular.interactive(), in: .circle)
                 .clipShape(Circle())
-                // Um efeito extra de pulso visual quando clica!
-                .scaleEffect(isFav ? 1.15 : 1.0)
+                .scaleEffect(isFav ? 0.9 : 0.8)
         }
         .onAppear {
             // Sincroniza o botão quando ele entra na tela
@@ -408,5 +455,25 @@ struct MovieFlatCarossel: View {
         }
         // Altura total reservada para os cards maiores e escalas
         .frame(height: (cardHeight * focusScale) + 40)
+    }
+}
+
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (255, 0, 0, 0)
+        }
+        self.init(.sRGB, red: Double(r) / 255, green: Double(g) / 255, blue:  Double(b) / 255, opacity: Double(a) / 255)
     }
 }

@@ -23,12 +23,19 @@ struct Event: Codable, Identifiable {
         let images: [EventImage]
         let premiereDate: PremiereDate?
         var isFavorite: Bool = false
+        let countryOrigin: String?
+        let directors: String?
+        let distributor: String?
+        let siteURL: String?
+        let ratingDescriptors: [String]?
+        let trailers: [Trailer]?
+        let ratingDetails: RatingDetails?
     
     // Mapeamento de nomes
     enum CodingKeys: String, CodingKey {
         case id, title, synopsis, contentRating, duration, genres
-        case inPreSale, imageFeatured, images, premiereDate
-        case cast
+        case inPreSale, imageFeatured, images, premiereDate, cast
+        case countryOrigin, directors, distributor, siteURL, ratingDescriptors, ratingDetails, trailers
     }
     
     // Lógica para o Poster
@@ -61,4 +68,19 @@ struct PremiereDate: Codable {
 struct EventImage: Codable {
     let url: String
     let type: String
+}
+
+struct Trailer: Codable {
+    let type: String?
+    let url: String?
+    let embeddedUrl: String?
+}
+
+struct RatingDetails: Codable {
+    let id: Int?
+    let name: String?
+    let label: String?
+    let displayName: String?
+    let description: String?
+    let color: String? 
 }

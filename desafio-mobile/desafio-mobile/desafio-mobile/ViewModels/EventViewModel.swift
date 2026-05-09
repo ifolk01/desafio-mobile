@@ -15,32 +15,37 @@ class EventViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var favoriteIDs: Set<String> = []
-    
+    private var isFetching = false
     
     
     private let service = EventService()
     
+  
     // Função para carregar os dados
     func loadEvents() async {
-        isLoading = true
-        errorMessage = nil
+        guard !isFetching else { return }
         
+        isFetching = true
+        isLoading = true
+        defer { isFetching = false
+            isLoading = false}
         do {
             let fetchedEvents = try await service.fetchComingSoonEvents()
             
-            // Ordenar os filmes pela data de estreia 
-  
+            // Ordenar os filmes pela data de estreia
+            
             self.events = fetchedEvents.sorted { (event1, event2) -> Bool in
                 guard let date1 = event1.premiereDate?.localDate else { return false }
                 guard let date2 = event2.premiereDate?.localDate else { return true }
                 return date1 < date2
             }
             
-            isLoading = false
+           
         } catch {
-            self.errorMessage = "Não foi possível carregar os filmes: \(error.localizedDescription)"
-            isLoading = false
-        }
+            // Ignora o log se for apenas um cancelamento de sistema
+            if let urlError = error as? URLError, urlError.code == .cancelled {
+                return
+            }    }
     }
     
     func toggleFavorite(event: Event) {
