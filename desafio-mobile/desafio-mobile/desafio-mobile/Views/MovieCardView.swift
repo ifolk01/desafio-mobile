@@ -40,7 +40,7 @@ struct MovieCardView: View {
                         Spacer()
                         
                         Text("PRÉ-VENDA")
-                            .font(.system(size: 7, weight: .bold, design: .rounded))
+                            .font(.system(size: 8, weight: .bold, design: .rounded))
                             .kerning(1.0)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)

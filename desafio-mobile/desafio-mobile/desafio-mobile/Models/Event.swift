@@ -25,6 +25,7 @@ struct Event: Codable, Identifiable {
         var isFavorite: Bool = false
         let countryOrigin: String?
         let directors: String?
+        let city: String?
         let distributor: String?
         let siteURL: String?
         let ratingDescriptors: [String]?
@@ -35,7 +36,7 @@ struct Event: Codable, Identifiable {
     enum CodingKeys: String, CodingKey {
         case id, title, synopsis, contentRating, duration, genres
         case inPreSale, imageFeatured, images, premiereDate, cast
-        case countryOrigin, directors, distributor, siteURL, ratingDescriptors, ratingDetails, trailers
+        case countryOrigin, directors, distributor, siteURL, ratingDescriptors, ratingDetails, trailers, city
     }
     
     // Lógica para o Poster

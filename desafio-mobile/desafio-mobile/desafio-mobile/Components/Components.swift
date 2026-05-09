@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-
+import CoreLocation
 
 struct EventPosterImage: View {
     let urlString: String?
@@ -330,7 +330,7 @@ struct FavoriteButton: View {
 struct MovieFlatCarossel: View {
     let events: [Event]
     @ObservedObject var viewModel: EventViewModel
-    
+    @ObservedObject var locationManager: LocationManager
     // Estado para controlar o índice e o arrasto
     @State private var currentIndex: Int = 0
     @State private var dragOffset: CGFloat = 0
@@ -376,7 +376,7 @@ struct MovieFlatCarossel: View {
                             let offset = (diff * spacing) + dragOffset
                             let shadowOpacity = max(0.4 - (absEffectiveDiff * 0.1), 0.1)
                             
-                            NavigationLink(destination: EventDetailView(event: event, viewModel: viewModel)) {
+                            NavigationLink(destination: EventDetailView(event: event, viewModel: viewModel, locationManager: locationManager)) {
                                 MovieCardView(event: event, viewModel: viewModel)
                                     .blur(radius: blurRadius)
                                     .shadow(color: .black.opacity(shadowOpacity), radius: scale == focusScale ? 15 : 6, y: 8)
@@ -457,7 +457,38 @@ struct MovieFlatCarossel: View {
         .frame(height: (cardHeight * focusScale) + 40)
     }
 }
-
+struct LocationButton: View {
+    @ObservedObject var locationManager: LocationManager
+    
+    var body: some View {
+        Button(action: {
+            // Alert nativo da localização
+            if locationManager.authorizationStatus == .notDetermined {
+                locationManager.requestPermission()
+            } else {
+                // Se ele já autorizou (ou se negou antes), manda direto para os Ajustes
+                locationManager.openSettings()
+            }
+        }) {
+            // Lógica visual baseada na permissão
+            if locationManager.authorizationStatus == .authorizedWhenInUse ||
+               locationManager.authorizationStatus == .authorizedAlways {
+                
+                Image(systemName: "location")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.blue)
+                
+            } else {
+                
+                Image(systemName: "location.slash.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(.gray) 
+                
+            }
+        }
+     
+    }
+}
 extension Color {
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
