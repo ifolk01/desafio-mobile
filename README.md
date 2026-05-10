@@ -2,162 +2,74 @@
 
 1 - Tecnologias e Frameworks
 
- Swift / SwiftUI: Interface declarativa e moderna.  
- MVVM (Model-View-ViewModel): Arquitetura para separação de responsabilidades.  
- Async/Await: Gerenciamento de concorrência e chamadas de rede.  
- XCTest: Testes unitários para lógica de negócio.
- 
-2 - Desafios Técnicos & Soluções
+Swift / SwiftUI: Interface declarativa e moderna.
 
- Durante o desenvolvimento, implementei soluções para cenários reais encontrados na API:  
+MVVM (Model-View-ViewModel): Arquitetura estruturada para separação clara de responsabilidades.
 
-* Resiliência no Carregamento de Imagens:
-    Implementei uma lógica de fallback no Event.swift para buscar diferentes tipos de imagens (PosterPortrait, PosterHorizontal ou imageFeatured) caso o campo principal esteja ausente.  
-    Tratei especificamente o erro NSURLErrorCancelled no AsyncImage. Isso evita que o usuário veja ícones de erro durante um scroll rápido no LazyVGrid, mantendo a fluidez visual.  
+Async/Await: Gerenciamento moderno de concorrência e chamadas de rede.
 
-* Tratamento de Dados Inconsistentes:
-   Identifiquei filmes na API com strings de imagem vazias (ex: Um Tio Quase Perfeito 3). O app trata isso exibindo um placeholder elegante com suporte a Glassmorphism (efeitos de material do iOS).  
+Kingfisher: Biblioteca robusta para download e cache de imagens.
 
-* Botão de Recuperação (Retry):
-   Criei um mecanismo de "identidade de view" usando .id(retryID) para permitir que o usuário recarregue imagens individualmente se houver falha de rede.
+XCTest: Testes unitários para validação de regras de negócio.
 
-3 - Qualidade e Testes
-    
-  Para garantir a integridade da regra de negócio de ordenação cronológica, implementei testes unitários utilizando XCTest:
-  
-  * EventViewModelTests: 
-     Valida se a lógica de ordenação por localDate funciona corretamente, garantindo que os filmes sejam exibidos do lançamento mais próximo para o mais distante.
-  
-  * Segurança: 
-     Foco em garantir que datas inconsistentes não quebrem a experiência do usuário.
-     
-     Reset de Estado: Uso de identificadores únicos (.id) para garantir que os carrosséis resetem o índice ao alternar entre abas, evitando o bug de "cards invisíveis".
+2 - Arquitetura Offline-First & Persistência de Dados
 
-4 - Arquitetura e Organização
- 
-  Para manter o projeto escalável e as Views leves, utilizei a técnica de **Componentização**:
-  
-  * Pasta Components: 
-     Centraliza elementos visuais reutilizáveis (como `EventPosterImage`, `GenreBadge`, `PrimaryButton`, entre outros)
-     Extração de elementos de UI (SearchBar, FavoriteButton, EmptyState) para um catálogo de componentes, reduzindo a complexidade das Views principais.
-  
-  * Sincronização de Estado Reativa: 
-     Utilização de `Set<String>` no ViewModel para gerenciamento global de favoritos, garantindo que a alteração de estado em uma tela (Detail) reflita instantaneamente em outras (Home/Card)
-    
-  * DRY: 
-     Evita a duplicação de lógica visual complexa, como o tratamento de estados de carregamento e erro de imagens assíncronas.
-  
-  * Agrupamento Mensal Inteligente: 
-     Lógica avançada para organizar filmes por Mês/Ano, com separação automática entre estreias de 2026 e lançamentos futuros (2027).
+O aplicativo foi construído para ser resiliente e funcionar de forma fluida mesmo em cenários de conectividade instável ou nula (Modo Avião).
 
-  * Ordenação Cronológica Estrita: 
-     Garantia de que todos os carrosséis (incluindo a aba de Favoritos) respeitam a ordem crescente das datas de estreia.
-    
-  * Filtro Temporal Dinâmico: Refatoração completa da lógica de "Últimas Estreias" vs "Em Breve". O app agora realiza a extração exata do prefixo ISO (yyyy-MM-dd) e compara de forma nativa com a data do dispositivo, ignorando falsos positivos da flag inPreSale herdados do banco de dados do servidor.
-  
-  * Decodificação (JSON): Ajuste fino no modelo Event.swift para suportar inconsistências da API (como campos directors que trafegam como String em vez de Array, e durações que chegam como espaços em branco).
+Fallback Offline (JSON): Interceptação do sucesso da requisição da API para salvar os dados brutos (Data) localmente via UserDefaults. Em caso de falha de rede, o app decodifica os dados locais, garantindo que listas e detalhes operem 100% offline.
 
-  * Gestão Segura de Concorrência: Implementação de locks (isFetching) no ViewModel para prevenir chamadas simultâneas à rede e tratamento amigável de interrupções de renderização do sistema (URLError.cancelled), limpando os logs de rede.
+Cache em Duas Camadas (Kingfisher): Imagens cacheadas automaticamente em memória (RAM) para transições instantâneas e em disco (Storage) para uso offline contínuo, substituindo limitações do framework nativo.
 
-5 - Funcionalidades e Melhorias de UI
+Image Prefetching Silencioso: Utilização do ImagePrefetcher para baixar todos os pôsteres em background assim que o JSON é recebido, evitando carregamentos pendentes (lazy loading) caso o usuário perca a conexão durante a navegação.
 
-  * Navegação Fluida:
-     Implementação de `NavigationLink` para transição entre lista e detalhes.
-  
-  * Layout Responsivo:
-     Uso de `GeometryReader` em substituição ao `UIScreen.main` (depreciado no iOS 26.0) para garantir adaptação a diferentes tamanhos de tela.
+Persistência de Estado do Usuário: Fluxo de perfil sem fricção. Os dados de sessão (Login/Logout) e a lista de Favoritos (Set de IDs) são preservados no UserDefaults, garantindo que a curadoria do usuário sobreviva ao encerramento completo do app.
 
-  * Tratamento de Strings Longas:
-     Utilização de `lineLimit` com reserva de espaço e `minimumScaleFactor` para evitar quebra de layout em títulos extensos.
+Sincronização de Logout: Implementação de uma lógica de segurança que limpa automaticamente a lista de favoritos local e do disco quando o usuário realiza o logout, garantindo a privacidade dos dados.
 
-  * Otimização de Imagens: 
-     Implementação de estados de carregamento (Shimmer/ProgressView) e tratamento de erros de rede com botão de re-tentativa (Retry) integrado ao componente `AsyncImage`.
+3 - Desafios Técnicos & Soluções Estruturais
 
-  * Apple Guidelines - Design for iOS "Liquid Glass"
+Gestão Segura de Concorrência: Implementação de locks de estado no ViewModel para prevenir chamadas simultâneas à rede e tratamento amigável de interrupções de renderização do sistema (URLError.cancelled), mantendo o ciclo de vida da UI estável.
 
-     Efeitos Nativos: Integração do novo modificador .glassEffect e materials translúcidos para botões de favorito e etiquetas de data.
-     
-     Icone: Personalizado e já feito aderindo o Liquid Glass no tinted, default e dark moods 
+Tratamento de Dados Inconsistentes: Identificação de falhas no payload da API (ex: strings vazias em imagens ou campos nulos). O app reage exibindo placeholders com suporte a Glassmorphism e fallbacks de texto (ex: "- min" para durações nulas), evitando quebras de layout.
 
-    Clean Design: Otimização de espaçamentos e remoção de contentores visuais desnecessários, permitindo que a arte dos pósteres seja a protagonista da interface.
-    
-  * Gestão de Usuário e Persistência Local
+Sincronização de Estado Reativa: Utilização de Set<String> no ViewModel (injetado via @ObservedObject) para gerenciamento global. Favoritar um filme na tela de Detalhes reflete instantaneamente na Home, sem necessidade de callbacks complexos.
 
-     Sistema de Perfil sem Fricção: Implementação de um fluxo de registro focado na experiência do usuário, exigindo apenas o nome para personalização do ambiente.
+Aritmética de Datas Nativa: Refatoração da lógica de "Últimas Estreias" vs "Em Breve". O app realiza a extração do prefixo ISO (yyyy-MM-dd) e compara estritamente com a data do dispositivo local, ignorando falsos positivos da flag genérica inPreSale do servidor.
 
-     Armazenamento Nativo e Seguro: Utilização do property wrapper @AppStorage para salvar os dados localmente no UserDefaults. Isso garante persistência de estado (Login/Logout) com zero latência, sem a necessidade de requisições de rede ou frameworks complexos de backend.
+4 - UI/UX Imersiva e Funcionalidades Core
 
-     Privacidade: Como não há tráfego de dados para servidores de terceiros, a aplicação respeita integralmente a privacidade local do dispositivo.
-    
-  * Localização e Inteligência de Contexto
+Carrossel:
 
-    Gestão de Permissões Proativa: 
-      O aplicativo solicita acesso à localização apenas quando necessário, utilizando o framework CoreLocation.
+Foco e Profundidade: O filme em destaque recebe escala (focusScale) e sombra profunda. Uso de desfoque progressivo (.blur) nos cards adjacentes para simular profundidade de campo de uma lente fotográfica.
 
-    Botão de Localização Inteligente: 
-      Um botão minimalista na NavigationStack que altera seu estado em tempo real. Se autorizado, exibe o ícone de localização ativa; se não, permite que o usuário seja redirecionado diretamente para os Ajustes do iOS para gerir as permissões.
+Física de Molas e Haptics: Navegação por gestos usando .interactiveSpring e feedback tátil (UISelectionFeedbackGenerator), simulando peso físico na troca de cards.
 
-    Geocodificação Reversa Moderna: 
-      Implementação do MKReverseGeocodingRequest (padrão iOS 26.0+) com processamento assíncrono para converter coordenadas em nomes de cidades sem impactar a performance da Main Thread.
+Aritmética Modular Infinita: Lógica de loop contínuo para meses com alto volume de filmes, alternando automaticamente para rolagem finita em listas curtas (como a aba Favoritos).
 
-    Critério de Segurança e Não Confirmação: 
-      O app não armazena histórico de localização após a revogação do acesso, pois isso impactaria na EventDetailView e os "ingressos disponíveis na sua localização". Implementamos um listener de autorização que limpa imediatamente qualquer dado de cidade (currentCity = nil) caso o usuário desative a permissão nos Ajustes, garantindo que mensagens de conveniência não apareçam indevidamente.
+Search UX Imersiva:
 
-    Match de Disponibilidade: 
-      Verificação dinâmica entre a localização do utilizador e os metadados da API (event.city). O aviso "ingresso disponível na sua localização" só é exibido se houver um match positivo e permissão ativa.
-    
-  * Carrossel Premium:
+Animação Dinâmica: A barra de busca "sequestra" a Navigation Bar. Ícones realizam fade out enquanto o campo de texto assume o centro da tela.
 
-     Efeito Leque Horizontal: Implementação de um sistema de carrossel ancorado à esquerda, com sobreposição inteligente de cartões.
+Gestão de Foco Inteligente: Integração com @FocusState, acionando o teclado instantaneamente no primeiro toque na lupa.
 
-     Destaque Dinâmico: O filme em foco recebe um aumento de escala automático (focusScale: 1.2) e sombras profundas.
+Inteligência de Contexto & Localização:
 
-     Blur: Uso de desfoque progressivo nos filmes em segundo plano para criar uma sensação de profundidade de campo profissional.
+Verificação assíncrona (MKReverseGeocodingRequest) para converter coordenadas em cidades sem travar a Main Thread.
 
-     Física de Molas: Navegação fluida utilizando interactiveSpring, garantindo que os gestos de arrasto sejam responsivos e naturais.
+Match dinâmico entre a localização do usuário e os metadados da API para exibir o badge de "Ingressos disponíveis na sua localização". Caso a permissão do iOS seja revogada, a memória de localização é limpa imediatamente por segurança.
 
-     Aritmética Modular: Implementação de lógica de loop infinito para meses com mais de 5 filmes, permitindo navegação contínua sem "paredes".
+Apple Guidelines & Liquid Glass:
 
-     Modo Híbrido: O sistema detecta automaticamente listas pequenas (como Favoritos) e desativa a repetição para evitar duplicatas visuais.
- 
-     Centralização Absoluta: Transição do layout ancorado à esquerda para um sistema de Cover Flow centralizado usando coordenadas absolutas (GeometryReader + .position).
+Implementação nativa do .glassEffect (materials translúcidos) para botões flutuantes e modais, permitindo que a arte visual dos pôsteres domine o background escuro da aplicação.
 
-     Segurança de Gesto: Uso de highPriorityGesture e bloqueio de interação em cards laterais para garantir que o arrasto do carrossel nunca entre em conflito com a navegação de detalhes.
-     
-    * Otimização de Performance e UX
-     
-       Optimização do favorite: Implementação de estado local e DispatchQueue para garantir que a animação da estrela seja instantânea, movendo o recálculo pesado da lista para o background.
+5 - Integrações Nativas e Qualidade
 
-       Feedback Háptico: Integração do UISelectionFeedbackGenerator para fornecer um "tique" tátil a cada troca de filme, simulando o peso físico dos componentes.
+Deep Links e Compartilhamento:
 
-       Sticky Tabs: Cabeçalho de categorias fixado no topo (pinnedViews) com efeito .ultraThinMaterial, maximizando a área de visualização durante o scroll.
+ShareLink Nativo: O sistema detecta a presença da URL da API. Se existente, gera um Rich Preview; caso contrário, compartilha um fallback em texto formatado com a sinopse do filme.
 
+OpenURL: Botões de "Trailer" e "Ingressos" integrados ao ambiente do iOS para transições suaves para o YouTube ou Safari.
 
-       Implementação de `hideKeyboard()` via `UIApplication` para melhorar a navegabilidade durante a busca.
-       
-       Feedback visual de "Empty State" customizado para buscas sem resultados.
-       
-       Transições suaves entre filtros utilizando `matchedGeometryEffect`.
-       
-       "Management Pattern". Isso significa que minha UI reage de forma inteligente a três estados: Loading (Carregando), Empty (Vazio) e Content (Conteúdo).
-    
-       Launch Screen: Implementação de uma tela de abertura customizada (LaunchScreenView) com AnimatedGradient pulsante, animações de escala/opacidade e transição suave (fade-out) para a tela principal, mascarando o tempo de carregamento inicial.
-    
-       Componentização de Badges: 
-          Criação de componentes visuais reaproveitáveis, incluindo: AgeRatingBadge: Converte cores Hexadecimais da API (ex: #e33493) dinamicamente para SwiftUI, exibido tanto nos cards (MovieCardView) quanto nos detalhes.
-       
-       Banner de Pré-Venda Imersivo: Redesign da tag de pré-venda nos pôsteres para uma barra inferior de ponta a ponta (maxWidth: .infinity), utilizando glassEffect e contornos translúcidos para chamar a atenção sem quebrar a estética. 
-       
-       Empty States Inteligentes: Telas de estado vazio dinâmicas e amigáveis, com mensagens e ícones que se adaptam perfeitamente à aba atual (Busca, Favoritos, Estreias ou Em Breve).
-       
-       Tratamento Visual de Fallbacks: A interface agora reage elegantemente à falta de dados da API (ex: exibindo "- min" para durações nulas e "Informação indisponível" para elencos não listados), evitando que a UI quebre ou fique vazia.
-       
-       Animação de Toolbar Dinâmica: A barra de busca foi construída do zero para "sequestrar" a Navigation Bar de forma elegante. Ao ser acionada, os ícones laterais e o título realizam um fade out, permitindo que o campo de texto assuma o placement: .principal centralizado.
+Cobertura de Testes (XCTest):
 
-       Gestão de Foco Inteligente: Integração do @FocusState acoplado à animação da barra, garantindo que o teclado suba instantaneamente no momento em que a lupa é tocada, removendo a necessidade de um segundo clique pelo usuário.
-
-6 - Integrações Nativas do iOS
-
- * ShareLink Integrado: Uso da API moderna do SwiftUI para compartilhamento nativo. O sistema detecta automaticamente se deve gerar um Preview de URL (para links do cinema) ou enviar um fallback em texto formatado (contendo a sinopse do filme).
-
- * Deep Links Acionáveis: Componentes TrailerButton e "Ver Ingressos" configurados com @Environment(\.openURL), abrindo URLs do YouTube e do site de forma fluida fora do aplicativo.
+Validação das regras de ordenação cronológica do EventViewModel, garantindo que algoritmos de exibição respeitem a ordem crescente de datas de estreia e não quebrem com payloads de meses futuros.

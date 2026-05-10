@@ -11,7 +11,7 @@ struct ProfileView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject var profileVM = ProfileViewModel()
     @State private var nameInput: String = ""
-    
+    @ObservedObject var viewModel: EventViewModel
     var body: some View {
         NavigationStack {
             ZStack {
@@ -21,7 +21,7 @@ struct ProfileView: View {
                 
                 VStack(spacing: 30) {
                     if profileVM.isLoggedIn {
-                   // Estado - logado
+                        // Estado - logado
                         VStack(spacing: 20) {
                             Image(systemName: "person.crop.circle.fill")
                                 .resizable()
@@ -38,6 +38,7 @@ struct ProfileView: View {
                             
                             Button(role: .destructive) {
                                 profileVM.logout()
+                                viewModel.clearFavorites()
                             } label: {
                                 Text("Sair da Conta")
                                     .fontWeight(.semibold)

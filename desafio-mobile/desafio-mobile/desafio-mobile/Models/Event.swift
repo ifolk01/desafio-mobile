@@ -11,26 +11,25 @@ struct EventResponse: Codable {
 }
 
 struct Event: Codable, Identifiable {
-        let id: String
-        let title: String
-        let synopsis: String?
-        let cast: String?
-        let contentRating: String?
-        let duration: String?
-        let genres: [String]?
-        let inPreSale: Bool
-        let imageFeatured: String?
-        let images: [EventImage]
-        let premiereDate: PremiereDate?
-        var isFavorite: Bool = false
-        let countryOrigin: String?
-        let directors: String?
-        let city: String?
-        let distributor: String?
-        let siteURL: String?
-        let ratingDescriptors: [String]?
-        let trailers: [Trailer]?
-        let ratingDetails: RatingDetails?
+    let id: String
+    let title: String
+    let synopsis: String?
+    let cast: String?
+    let contentRating: String?
+    let duration: String?
+    let genres: [String]?
+    let inPreSale: Bool
+    let imageFeatured: String?
+    let images: [EventImage]
+    let premiereDate: PremiereDate?
+    let countryOrigin: String?
+    let directors: String?
+    let city: String?
+    let distributor: String?
+    let siteURL: String?
+    let ratingDescriptors: [String]?
+    let trailers: [Trailer]?
+    let ratingDetails: RatingDetails?
     
     // Mapeamento de nomes
     enum CodingKeys: String, CodingKey {

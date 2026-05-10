@@ -7,61 +7,29 @@
 
 import SwiftUI
 import CoreLocation
+import Kingfisher
 
 struct EventPosterImage: View {
     let urlString: String?
-    @Binding var retryID: UUID
-    
     var width: CGFloat? = nil
     var height: CGFloat? = nil
-    var contentMode: ContentMode = .fill
-    
+    var contentMode: SwiftUI.ContentMode = .fill
     var body: some View {
         Group {
             if let urlString = urlString, let url = URL(string: urlString) {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: contentMode)
-                    
-                    case .failure(let error):
-                        let isCancelled = (error as NSError).code == NSURLErrorCancelled
-                        
-                        Button {
-                            retryID = UUID()
-                        } label: {
-                            VStack(spacing: 12) {
-                                Image(systemName: isCancelled ? "arrow.clockwise" : "exclamationmark.triangle")
-                                    .font(.system(size: 22, weight: .semibold))
-                                    .foregroundColor(.secondary)
-                                    .padding()
-                                    .background(.ultraThinMaterial)
-                                    .clipShape(Circle())
-                                
-                                Text(isCancelled ? "Tentar carregar" : "Erro de conexão")
-                                    .font(.caption2)
-                                    .fontWeight(.medium)
-                                    .foregroundColor(.secondary)
-                                    .multilineTextAlignment(.center)
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(Color(uiColor: .systemGray6))
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        
-                    case .empty:
+                
+                // KingFisher que está pegando a url agr, ao em vez do Async
+                KFImage(url)
+                    .placeholder {
                         ZStack {
                             Color.gray.opacity(0.1)
                             ProgressView()
                         }
-                        
-                    @unknown default:
-                        EmptyView()
                     }
-                }
-                .id(retryID)
+                    .fade(duration: 0.25) // Modificador do Kingfisher!
+                    .resizable()
+                    .aspectRatio(contentMode: contentMode)
+                
             } else {
                 PlaceholderCard(width: width, height: height)
             }
@@ -102,7 +70,7 @@ struct PremiereBadge: View {
         .padding(.vertical, 5)
         .background(
             Capsule()
-             
+            
                 .fill(Color.green.opacity(0.9))
         )
     }
@@ -137,7 +105,7 @@ struct GenreBadge: View {
 struct TrailerButton: View {
     let url: URL
     
-   
+    
     @Environment(\.openURL) private var openURL
     
     var body: some View {
@@ -177,7 +145,7 @@ struct PrimaryButton: View {
             .foregroundColor(.white)
             
             .cornerRadius(12)
-
+            
         }
     }
 }
@@ -215,7 +183,7 @@ struct FilterTabButton: View {
 struct EmptyStateView: View {
     let icon: String
     let message: String
-
+    
     var body: some View {
         VStack(spacing: 12) {
             Spacer()
@@ -253,15 +221,15 @@ struct FavoriteButton: View {
     @ObservedObject var viewModel: EventViewModel
     var size: Font = .body
     var padding: CGFloat = 6
-
-
+    
+    
     @State private var isFav: Bool = false
-
+    
     var body: some View {
         Button {
-         
-            let impact = UIImpactFeedbackGenerator(style: .light)
-            impact.impactOccurred()
+            
+            let impact = UIImpactFeedbackGenerator(style: .soft)
+            impact.impactOccurred(intensity: 0.6)
             
             
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
@@ -287,9 +255,9 @@ struct FavoriteButton: View {
             isFav = viewModel.favoriteIDs.contains(event.id)
         }
         .onChange(of: viewModel.favoriteIDs) { oldValue, newValue in
-          
-                    isFav = newValue.contains(event.id)
-                }
+            
+            isFav = newValue.contains(event.id)
+        }
     }
 }
 struct MovieFlatCarossel: View {
@@ -300,7 +268,7 @@ struct MovieFlatCarossel: View {
     @State private var currentIndex: Int = 0
     @State private var dragOffset: CGFloat = 0
     
-   
+    
     let cardWidth: CGFloat = 110
     let cardHeight: CGFloat = 230
     let spacing: CGFloat = 80
@@ -309,7 +277,7 @@ struct MovieFlatCarossel: View {
     let focusScale: CGFloat = 1.25
     let scaleSpread: CGFloat = 0.25
     let focusBlur: CGFloat = 2.0
-
+    
     var body: some View {
         GeometryReader { geo in
             
@@ -319,12 +287,12 @@ struct MovieFlatCarossel: View {
                     
                     let isInfinite = events.count > 5
                     
-                   
+                    
                     let displayRange = isInfinite ? Array((currentIndex - 5)...(currentIndex + 5)) : Array(0..<events.count)
                     
                     ForEach(displayRange, id: \.self) { virtualIndex in
                         
-                 
+                        
                         let realIndex = isInfinite ? (virtualIndex % events.count + events.count) % events.count : virtualIndex
                         let event = events[realIndex]
                         
@@ -361,63 +329,63 @@ struct MovieFlatCarossel: View {
                 }
             }
             .onChange(of: events.count) { oldCount, newCount in
-                       
-                        if newCount == 0 {
+                
+                if newCount == 0 {
+                    currentIndex = 0
+                } else if newCount <= 5 {
+                    if currentIndex >= newCount {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            currentIndex = newCount - 1
+                        }
+                    } else if currentIndex < 0 {
+                        withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
                             currentIndex = 0
-                        } else if newCount <= 5 {
-                            if currentIndex >= newCount {
-                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                    currentIndex = newCount - 1
-                                }
-                            } else if currentIndex < 0 {
-                                withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
-                                    currentIndex = 0
-                                }
-                            }
                         }
                     }
+                }
+            }
             .frame(width: geo.size.width)
             
             // Container do gesto
             .background(Color.clear.contentShape(Rectangle()))
             .highPriorityGesture(
-                            DragGesture()
-                                .onChanged { gesture in
-                                    dragOffset = gesture.translation.width
+                DragGesture()
+                    .onChanged { gesture in
+                        dragOffset = gesture.translation.width
+                    }
+                    .onEnded { gesture in
+                        let velocity = gesture.predictedEndTranslation.width / spacing
+                        let threshold: CGFloat = velocity > 0.5 ? 0.3 : 0.7
+                        let isInfinite = events.count > 5
+                        
+                        withAnimation(.spring(response: 0.5, dampingFraction: 0.82)) {
+                            
+                            // Flag
+                            var indexChanged = false
+                            
+                            if gesture.translation.width < -spacing * threshold {
+                                if isInfinite || currentIndex < events.count - 1 {
+                                    currentIndex += 1
+                                    indexChanged = true
                                 }
-                                .onEnded { gesture in
-                                    let velocity = gesture.predictedEndTranslation.width / spacing
-                                    let threshold: CGFloat = velocity > 0.5 ? 0.3 : 0.7
-                                    let isInfinite = events.count > 5
-                                    
-                                    withAnimation(.spring(response: 0.5, dampingFraction: 0.82)) {
-                                        
-                                        // Flag
-                                        var indexChanged = false
-                                        
-                                        if gesture.translation.width < -spacing * threshold {
-                                            if isInfinite || currentIndex < events.count - 1 {
-                                                currentIndex += 1
-                                                indexChanged = true
-                                            }
-                                        } else if gesture.translation.width > spacing * threshold {
-                                            if isInfinite || currentIndex > 0 {
-                                                currentIndex -= 1
-                                                indexChanged = true
-                                            }
-                                        }
-                                        
-                                        // Haptic
-                                        if indexChanged {
-                                            let generator = UISelectionFeedbackGenerator()
-                                            generator.prepare()
-                                            generator.selectionChanged()
-                                        }
-                                        
-                                        dragOffset = 0
-                                    }
+                            } else if gesture.translation.width > spacing * threshold {
+                                if isInfinite || currentIndex > 0 {
+                                    currentIndex -= 1
+                                    indexChanged = true
                                 }
-                        )
+                            }
+                            
+                            // Haptic
+                            if indexChanged {
+                                let generator = UISelectionFeedbackGenerator()
+                                generator.prepare()
+                                generator.selectionChanged()
+                            }
+                            
+                            dragOffset = 0
+                        }
+                    }
+            )
         }
         // Altura total reservada para os cards maiores e escalas
         .frame(height: (cardHeight * focusScale) + 40)
@@ -438,7 +406,7 @@ struct LocationButton: View {
         }) {
             // Lógica visual baseada na permissão
             if locationManager.authorizationStatus == .authorizedWhenInUse ||
-               locationManager.authorizationStatus == .authorizedAlways {
+                locationManager.authorizationStatus == .authorizedAlways {
                 
                 Image(systemName: "location")
                     .font(.system(size: 18, weight: .semibold))
@@ -452,19 +420,19 @@ struct LocationButton: View {
                 
             }
         }
-     
+        
     }
 }
 struct AccountButton: View {
     @Binding var showProfile: Bool
     var body: some View {
         Button(action: {
-                showProfile.toggle() 
-            }) {
-                Image(systemName: "person.crop.circle")
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundColor(.white)
-            }
+            showProfile.toggle() 
+        }) {
+            Image(systemName: "person.crop.circle")
+                .font(.system(size: 20, weight: .medium))
+                .foregroundColor(.white)
+        }
     }
 }
 extension Color {

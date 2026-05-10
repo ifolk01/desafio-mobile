@@ -13,11 +13,9 @@ struct LaunchScreenView: View {
     @State private var imageOpacity: Double = 0.0
     var onAnimationFinished: () -> Void
     
-    @State private var animaTrigger = false
-    
     var body: some View {
         ZStack {
-          
+            
             
             AnimatedGradient()
                 .transition(.opacity)
@@ -30,13 +28,13 @@ struct LaunchScreenView: View {
                 .opacity(imageOpacity)
         }
         .onAppear {
-           
+            
             withAnimation(.spring(response: 0.5, dampingFraction: 0.6).delay(0.8)) {
                 imageScale = 1.2
                 imageOpacity = 1.2
             }
             
-           
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.9) {
                 onAnimationFinished()
             }
@@ -48,7 +46,7 @@ struct LaunchScreenView: View {
 @available(iOS 16.0, *)
 struct AnimatedGradient: View {
     @State private var animate = false
-
+    
     var body: some View {
         LinearGradient(
             colors: animate ? [Color.degradeLaunchDark, Color.degradeLaunchLight, Color.degradeLaunchLight] : [Color.degradeLaunchLight, Color.degradeLaunchLight, Color.degradeLaunchDark],

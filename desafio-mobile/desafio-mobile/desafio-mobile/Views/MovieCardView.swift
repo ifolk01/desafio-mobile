@@ -10,31 +10,31 @@ import SwiftUI
 struct MovieCardView: View {
     let event: Event
     @ObservedObject var viewModel: EventViewModel
-    @State private var retryID = UUID()
+    
     
     var body: some View {
         VStack(alignment: .center, spacing: 8) {
-           
+            
             ZStack(alignment: .topTrailing) {
                 // O Poster
-                EventPosterImage(urlString: event.posterURL, retryID: $retryID, width: 110, height: 170)
+                EventPosterImage(urlString: event.posterURL, width: 110, height: 170)
                 
                 HStack(alignment: .top) {
-                                
-                                // Classificação indicativa
-                                if let rating = event.ratingDetails, let label = rating.label, !label.isEmpty {
-                                    AgeRatingBadge(rating: rating)
-                                        .scaleEffect(0.7)
-                                        .shadow(radius: 4)
-                                }
-                                
-                                Spacer()
-                                
-                                
-                                FavoriteButton(event: event, viewModel: viewModel)
-                            }
-                            .padding(8)
-             
+                    
+                    // Classificação indicativa
+                    if let rating = event.ratingDetails, let label = rating.label, !label.isEmpty {
+                        AgeRatingBadge(rating: rating)
+                            .scaleEffect(0.7)
+                            .shadow(radius: 4)
+                    }
+                    
+                    Spacer()
+                    
+                    
+                    FavoriteButton(event: event, viewModel: viewModel)
+                }
+                .padding(8)
+                
                 if event.inPreSale {
                     VStack {
                         Spacer()
@@ -51,30 +51,30 @@ struct MovieCardView: View {
                                 topTrailingRadius: 0
                             ))
                             .overlay(
-                              
+                                
                                 Rectangle()
                                     .frame(height: 0.5)
                                     .foregroundColor(Color.white.opacity(0.3)),
                                 alignment: .top
                             )
                     }
-                 
+                    
                 }
-               
+                
             }
             .frame(width: 110, height: 170)
             
-           
+            
             Text(event.title)
-                            .font(.caption)
-                            .bold()
-                            .lineLimit(3, reservesSpace: true)
-                            .multilineTextAlignment(.leading)
-                            .minimumScaleFactor(0.8)
-                            .foregroundColor(.primary)
-                            .frame(maxWidth: .infinity, alignment: .topLeading)
-                            .padding(.horizontal, 10)
-                            .padding(.bottom, 12)
+                .font(.caption)
+                .bold()
+                .lineLimit(3, reservesSpace: true)
+                .multilineTextAlignment(.leading)
+                .minimumScaleFactor(0.8)
+                .foregroundColor(.primary)
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+                .padding(.horizontal, 10)
+                .padding(.bottom, 12)
         }
     }
 }

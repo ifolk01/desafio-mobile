@@ -37,21 +37,21 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-            // Atualiza o status na thread principal para a UI reagir na hora
-            DispatchQueue.main.async {
-                self.authorizationStatus = manager.authorizationStatus
-                
-                // Se o usuário revogar o acesso, limpa a memória e não continua herdando a ult localização que influencia no EventDetailView
-                if self.authorizationStatus == .denied || self.authorizationStatus == .restricted || self.authorizationStatus == .notDetermined {
-                    self.currentCity = nil
-                }
-            }
+        // Atualiza o status na thread principal para a UI reagir na hora
+        DispatchQueue.main.async {
+            self.authorizationStatus = manager.authorizationStatus
             
-            // Se permitiu, pede a localização atual
-            if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
-                manager.requestLocation()
+            // Se o usuário revogar o acesso, limpa a memória e não continua herdando a ult localização que influencia no EventDetailView
+            if self.authorizationStatus == .denied || self.authorizationStatus == .restricted || self.authorizationStatus == .notDetermined {
+                self.currentCity = nil
             }
         }
+        
+        // Se permitiu, pede a localização atual
+        if manager.authorizationStatus == .authorizedWhenInUse || manager.authorizationStatus == .authorizedAlways {
+            manager.requestLocation()
+        }
+    }
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
@@ -64,29 +64,29 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     
     // Traduz Coordenada -> Nome da Cidade
     private func getCityName(for location: CLLocation) {
-            Task {
-                if let request = MKReverseGeocodingRequest(location: location) {
-                    do {
-                      
-                        let mapItems = try await request.mapItems
+        Task {
+            if let request = MKReverseGeocodingRequest(location: location) {
+                do {
+                    
+                    let mapItems = try await request.mapItems
+                    
+                    // O .first de um array SIM é opcional, então nele mantemos o 'if let'
+                    if let firstItem = mapItems.first {
                         
-                        // O .first de um array SIM é opcional, então nele mantemos o 'if let'
-                        if let firstItem = mapItems.first {
-                            
-                            if let shortAddress = firstItem.address?.shortAddress {
-                                await MainActor.run {
-                                    self.currentCity = shortAddress
-                                }
-                            } else if let fullAddress = firstItem.address?.fullAddress {
-                                await MainActor.run {
-                                    self.currentCity = fullAddress
-                                }
+                        if let shortAddress = firstItem.address?.shortAddress {
+                            await MainActor.run {
+                                self.currentCity = shortAddress
+                            }
+                        } else if let fullAddress = firstItem.address?.fullAddress {
+                            await MainActor.run {
+                                self.currentCity = fullAddress
                             }
                         }
-                    } catch {
-                        print("Erro no MapKit: \(error.localizedDescription)")
                     }
+                } catch {
+                    print("Erro no MapKit: \(error.localizedDescription)")
                 }
             }
         }
+    }
 }

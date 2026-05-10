@@ -14,57 +14,57 @@ struct ContentView: View {
     @State private var currentTab = "Em Breve"
     @Namespace var animation
     @State private var showProfile = false
-   
+    
     var emptyStateContent: (icon: String, message: String) {
+        if !searchText.isEmpty {
+            return ("magnifyingglass", "Não encontramos nenhum filme com o nome '\(searchText)'.")
+        }
+        
+        switch currentTab {
+        case "Favoritos":
+            return ("star", "Você ainda não tem filmes favoritos.")
+        case "Últ. Estreias":
+            return ("film", "Não há estreias recentes para exibir neste momento.")
+        case "Em Breve":
+            return ("calendar", "Não há filmes previstos para os próximos meses.")
+        default:
+            return ("questionmark.circle", "Nenhum filme encontrado.")
+        }
+    }
+    var filteredEvents: [Event] {
+        let today = Date()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        let todayString = formatter.string(from: today)
+        
+        return viewModel.events.filter { event in
+            // Pega exatamente a string "2026-05-07"
+            let eventDate = String(event.premiereDate?.localDate?.prefix(10) ?? "")
+            
+            // Filtro da barra de busca
             if !searchText.isEmpty {
-                return ("magnifyingglass", "Não encontramos nenhum filme com o nome '\(searchText)'.")
+                guard event.title.localizedCaseInsensitiveContains(searchText) else { return false }
             }
             
             switch currentTab {
-            case "Favoritos":
-                return ("star", "Você ainda não tem filmes favoritos.")
             case "Últ. Estreias":
-                return ("film", "Não há estreias recentes para exibir neste momento.")
+                
+                return !eventDate.isEmpty && eventDate <= todayString
+                
             case "Em Breve":
-                return ("calendar", "Não há filmes previstos para os próximos meses.")
+                
+                return eventDate > todayString || eventDate.isEmpty
+                
+            case "Favoritos":
+                return viewModel.isFavorite(event)
+                
             default:
-                return ("questionmark.circle", "Nenhum filme encontrado.")
+                return true
             }
         }
-    var filteredEvents: [Event] {
-            let today = Date()
-            let formatter = DateFormatter()
-            formatter.dateFormat = "yyyy-MM-dd"
-            let todayString = formatter.string(from: today)
-            
-            return viewModel.events.filter { event in
-                // Pega exatamente a string "2026-05-07"
-                let eventDate = String(event.premiereDate?.localDate?.prefix(10) ?? "")
-                
-                // Filtro da barra de busca
-                if !searchText.isEmpty {
-                    guard event.title.localizedCaseInsensitiveContains(searchText) else { return false }
-                }
-                
-                switch currentTab {
-                case "Últ. Estreias":
-                  
-                    return !eventDate.isEmpty && eventDate <= todayString
-                    
-                case "Em Breve":
-          
-                    return eventDate > todayString || eventDate.isEmpty
-                    
-                case "Favoritos":
-                    return viewModel.isFavorite(event)
-                    
-                default:
-                    return true
-                }
-            }
-        }
+    }
     var groupedEvents: [(key: String, value: [Event])] {
-       
+        
         //Filmes filtrados em Estreias ou Favoritos
         let dictionary = Dictionary(grouping: filteredEvents) { event -> String in
             if let localDate = event.premiereDate?.localDate, localDate.count >= 7 {
@@ -73,10 +73,10 @@ struct ContentView: View {
             return "9999-12"
         }
         
- 
+        
         let sortedKeys = dictionary.keys.sorted()
         
-    
+        
         return sortedKeys.map { key in
             let displayTitle = key == "9999-12" ? "Em breve" : key.formatToMonthYear()
             
@@ -95,7 +95,7 @@ struct ContentView: View {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
     
-   
+    
     
     var body: some View {
         TabView {
@@ -113,8 +113,8 @@ struct ContentView: View {
                         
                         LazyVStack(spacing: 0, pinnedViews: [.sectionHeaders]) {
                             
-
-
+                            
+                            
                             
                             // Seções
                             Section(header:
@@ -168,94 +168,94 @@ struct ContentView: View {
                     }
                 }
                 .navigationTitle(isSearching ? "" : "Filmes")
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            if isSearching {
-                                
-                                // O Campo de Texto assume o lugar do Título
-                                ToolbarItem(placement: .principal) {
-                                    HStack {
-                                        Image(systemName: "magnifyingglass")
-                                            .foregroundColor(.gray)
-                                        
-                                        TextField("Buscar...", text: $searchText)
-                                            .focused($isSearchFocused)
-                                            .textInputAutocapitalization(.never)
-                                        
-                                        if !searchText.isEmpty {
-                                            Button(action: {
-                                                searchText = ""
-                                            }) {
-                                                Image(systemName: "xmark.circle.fill")
-                                                    .foregroundColor(.gray)
-                                            }
-                                        }
-                                    }
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
-                                    .glassEffect()
-                                    .cornerRadius(10)
-                                    .frame(width: 260)
-                                }
-                                
-                                // Botão Cancelar no canto direito
-                                ToolbarItem(placement: .topBarTrailing) {
-                                    Button("Cancelar") {
-                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                            isSearching = false
-                                            searchText = ""
-                                            isSearchFocused = false
-                                        }
-                                    }
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(.blue)
-                                }
-                                
-                            } else {
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    if isSearching {
                         
-                                ToolbarItem(placement: .topBarLeading) {
-                                    LocationButton(locationManager: locationManager)
+                        // O Campo de Texto assume o lugar do Título
+                        ToolbarItem(placement: .principal) {
+                            HStack {
+                                Image(systemName: "magnifyingglass")
+                                    .foregroundColor(.gray)
+                                
+                                TextField("Buscar...", text: $searchText)
+                                    .focused($isSearchFocused)
+                                    .textInputAutocapitalization(.never)
+                                
+                                if !searchText.isEmpty {
+                                    Button(action: {
+                                        searchText = ""
+                                    }) {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundColor(.gray)
+                                    }
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .glassEffect()
+                            .cornerRadius(10)
+                            .frame(width: 260)
+                        }
+                        
+                        // Botão Cancelar no canto direito
+                        ToolbarItem(placement: .topBarTrailing) {
+                            Button("Cancelar") {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                    isSearching = false
+                                    searchText = ""
+                                    isSearchFocused = false
+                                }
+                            }
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(.blue)
+                        }
+                        
+                    } else {
+                        
+                        ToolbarItem(placement: .topBarLeading) {
+                            LocationButton(locationManager: locationManager)
+                        }
+                        
+                        ToolbarItem(placement: .topBarTrailing) {
+                            // Agrupando Lupa e Conta
+                            HStack(spacing: 16) {
+                                Button(action: {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                        isSearching = true
+                                        isSearchFocused = true
+                                    }
+                                }) {
+                                    Image(systemName: "magnifyingglass")
+                                        .font(.system(size: 18, weight: .semibold))
+                                        .foregroundColor(.white)
                                 }
                                 
-                                ToolbarItem(placement: .topBarTrailing) {
-                                                                    // Agrupando Lupa e Conta
-                                                                    HStack(spacing: 16) {
-                                                                        Button(action: {
-                                                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                                                                isSearching = true
-                                                                                isSearchFocused = true
-                                                                            }
-                                                                        }) {
-                                                                            Image(systemName: "magnifyingglass")
-                                                                                .font(.system(size: 18, weight: .semibold))
-                                                                                .foregroundColor(.white)
-                                                                        }
-                                                                        
-                                                                        AccountButton(showProfile: $showProfile)
-                                                                    }
-                                                                    .padding(.horizontal, 16)
-                                                                    .padding(.vertical, 8)
-                                                                  
-                                                                }
-                                                               
-                                                            }
-                                                            
-                                                        }
-                                                
-                                                       
-                                                        .fullScreenCover(isPresented: $showProfile) {
-                                                            ProfileView()
-                                                        }
-                                                        .onAppear {
-                                               
-                                                            locationManager.requestPermission()
-                                                        }
-                                                .task {
-                                                    if viewModel.events.isEmpty {
-                                                        await viewModel.loadEvents()
-                                                    }
-                                                }
-                                            } 
+                                AccountButton(showProfile: $showProfile)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            
+                        }
+                        
+                    }
+                    
+                }
+                
+                
+                .fullScreenCover(isPresented: $showProfile) {
+                    ProfileView(viewModel: viewModel)
+                }
+                .onAppear {
+                    
+                    locationManager.requestPermission()
+                }
+                .task {
+                    if viewModel.events.isEmpty {
+                        await viewModel.loadEvents()
+                    }
+                }
+            } 
             .onTapGesture {
                 hideKeyboard()
             }
@@ -268,7 +268,7 @@ struct ContentView: View {
             NavigationStack { Text("Prevenções") }.tabItem { Label("Prevenções", systemImage: "shield.checkerboard") }
         }
         .accentColor(.blue)
-       
+        
     }
     
 }

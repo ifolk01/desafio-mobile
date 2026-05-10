@@ -9,7 +9,7 @@ import SwiftUI
 import Combine
 
 class ProfileViewModel: ObservableObject {
- 
+    
     @AppStorage("user_name") var userName: String = ""
     @AppStorage("is_logged_in") var isLoggedIn: Bool = false
     

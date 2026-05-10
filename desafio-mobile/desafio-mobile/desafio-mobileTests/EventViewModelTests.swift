@@ -28,8 +28,19 @@ final class EventViewModelTests: XCTestCase {
         )
         
         // Eventos com IDs e Títulos claros
-        let movieLate = Event(id: "100", title: "Filme de Outubro", synopsis: nil, cast: nil, contentRating: nil, duration: nil, genres: nil, inPreSale: false, imageFeatured: nil, images: [], premiereDate: dateOct)
-        let movieEarly = Event(id: "200", title: "Filme de Maio", synopsis: nil, cast: nil, contentRating: nil, duration: nil, genres: nil, inPreSale: false, imageFeatured: nil, images: [], premiereDate: dateMay)
+        let movieLate = Event(
+                    id: "100", title: "Filme de Outubro", synopsis: nil, cast: nil, contentRating: nil,
+                    duration: nil, genres: nil, inPreSale: false, imageFeatured: nil, images: [],
+                    premiereDate: dateOct, countryOrigin: nil, directors: nil, city: nil,
+                    distributor: nil, siteURL: nil, ratingDescriptors: nil, trailers: nil, ratingDetails: nil
+                )
+                
+                let movieEarly = Event(
+                    id: "200", title: "Filme de Maio", synopsis: nil, cast: nil, contentRating: nil,
+                    duration: nil, genres: nil, inPreSale: false, imageFeatured: nil, images: [],
+                    premiereDate: dateMay, countryOrigin: nil, directors: nil, city: nil,
+                    distributor: nil, siteURL: nil, ratingDescriptors: nil, trailers: nil, ratingDetails: nil
+                )
         
         
         // Simulando o recebimento dos dados na ordem

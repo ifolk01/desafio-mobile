@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		9B5FA5C12FAB654400D255F4 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 9B5FA5C02FAB654400D255F4 /* README.md */; };
+		9B5FA74F2FB00EF000D255F4 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 9B5FA74E2FB00EF000D255F4 /* Kingfisher */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -70,6 +71,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9B5FA74F2FB00EF000D255F4 /* Kingfisher in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -97,6 +99,7 @@
 				9B5FA5772FAA5D9B00D255F4 /* desafio-mobile */,
 				9B5FA5852FAA5D9C00D255F4 /* desafio-mobileTests */,
 				9B5FA58F2FAA5D9C00D255F4 /* desafio-mobileUITests */,
+				9B5FA74D2FB00EF000D255F4 /* Frameworks */,
 				9B5FA5762FAA5D9B00D255F4 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -109,6 +112,13 @@
 				9B5FA58C2FAA5D9C00D255F4 /* desafio-mobileUITests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		9B5FA74D2FB00EF000D255F4 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -131,6 +141,7 @@
 			);
 			name = "desafio-mobile";
 			packageProductDependencies = (
+				9B5FA74E2FB00EF000D255F4 /* Kingfisher */,
 			);
 			productName = "desafio-mobile";
 			productReference = 9B5FA5752FAA5D9B00D255F4 /* desafio-mobile.app */;
@@ -214,6 +225,9 @@
 			);
 			mainGroup = 9B5FA56C2FAA5D9B00D255F4;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				9B5FA74C2FB00C2B00D255F4 /* XCRemoteSwiftPackageReference "Kingfisher" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 9B5FA5762FAA5D9B00D255F4 /* Products */;
 			projectDirPath = "";
@@ -427,7 +441,8 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UIStatusBarStyle = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.3;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -468,7 +483,8 @@
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UIStatusBarStyle = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				INFOPLIST_KEY_UIUserInterfaceStyle = Dark;
 				IPHONEOS_DEPLOYMENT_TARGET = 26.3;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -616,6 +632,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9B5FA74C2FB00C2B00D255F4 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9B5FA74E2FB00EF000D255F4 /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9B5FA74C2FB00C2B00D255F4 /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9B5FA56D2FAA5D9B00D255F4 /* Project object */;
 }
